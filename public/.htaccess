@@ -1,0 +1,17 @@
+# Für klassischen Webspace (Apache, z. B. IONOS, Strato, All-Inkl):
+# Alle Seitenaufrufe auf index.html umleiten (nötig für Adressen wie /mannschaften)
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+<IfModule mod_headers.c>
+  <Files "sw.js">
+    Header set Cache-Control "no-cache"
+  </Files>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+AddType application/manifest+json .webmanifest
