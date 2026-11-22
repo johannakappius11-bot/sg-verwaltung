@@ -6,6 +6,7 @@ import { addDays, fmtDate, fmtDateLong, hm, isoWeekday, sameDay, startOfWeek, we
 import { buildOccurrences, conflictKeys, KIND_LABEL, layoutLanes } from '../lib/schedule.js';
 import { Icon, PersonCard, Sheet } from '../components/ui.jsx';
 import EventForm from '../components/EventForm.jsx';
+import { alertDialog, confirmDialog, promptDialog } from '../components/dialog.jsx';
 
 const FIELD_KEY = 'platzplan-field';
 const VIEW_KEY = 'platzplan-view';
@@ -205,7 +206,7 @@ function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
 
   const act = async (fn, msg) => {
     setBusy(true);
-    try { await fn(); await reloadData(); toast(msg); onChanged(); } catch (e) { alert(e.message); }
+    try { await fn(); await reloadData(); toast(msg); onChanged(); } catch (e) { alertDialog(e.message); }
     setBusy(false);
   };
   const title = o.kind === 'spiel' ? (o.isAway ? 'Auswärtsspiel' : 'Heimspiel') : o.kind === 'sonstiges' ? (o.title || 'Termin') : 'Training';
@@ -233,8 +234,8 @@ function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
         {canEdit && (
           <div className="detail-actions">
             {o.type === 'series' && !o.cancelled && (
-              <button className="btn" disabled={busy} onClick={() => {
-                const reason = prompt(`Training am ${fmtDate(o.start)} absagen?\nGrund (optional):`, '');
+              <button className="btn" disabled={busy} onClick={async () => {
+                const reason = await promptDialog(`Training am ${fmtDate(o.start)} absagen? Grund (optional):`, '', { title: 'Termin absagen', confirmLabel: 'Absagen' });
                 if (reason !== null) act(() => api.insert('series_exceptions', { series_id: o.seriesId, date: o.date, reason: reason || null }), 'Termin abgesagt');
               }}>Nur diesen Termin absagen</button>
             )}
@@ -244,7 +245,7 @@ function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
             {series && <button className="btn" onClick={() => onEdit({ series })}><Icon name="edit" /> Alle Termine dieser Serie bearbeiten</button>}
             {o.type === 'event' && <button className="btn" onClick={() => onEdit({ event: o.event })}><Icon name="edit" /> Bearbeiten</button>}
             {o.type === 'event' && (
-              <button className="btn btn-danger" disabled={busy} onClick={() => confirm('Diesen Termin wirklich löschen?') && act(() => api.remove('events', o.eventId), 'Gelöscht')}>
+              <button className="btn btn-danger" disabled={busy} onClick={async () => (await confirmDialog('Diesen Termin wirklich löschen?', { confirmLabel: 'Löschen', danger: true })) && act(() => api.remove('events', o.eventId), 'Gelöscht')}>
                 <Icon name="trash" /> Löschen
               </button>
             )}

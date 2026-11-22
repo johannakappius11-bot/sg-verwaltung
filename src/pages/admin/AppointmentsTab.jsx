@@ -5,6 +5,7 @@ import { addDays, fmtDate, hm, startOfDay, WEEKDAYS_LONG, ymd } from '../../lib/
 import { KIND_LABEL } from '../../lib/schedule.js';
 import { Empty, Icon } from '../../components/ui.jsx';
 import EventForm from '../../components/EventForm.jsx';
+import { alertDialog, choiceDialog, confirmDialog } from '../../components/dialog.jsx';
 
 export default function AppointmentsTab() {
   const { data, editableTeams, fieldById, teamById, reloadData, toast, isAdmin } = useApp();
@@ -28,8 +29,12 @@ export default function AppointmentsTab() {
 
   const delSeries = async (s) => {
     const ended = s.valid_until && s.valid_until < today;
-    const choice = ended ? (confirm('Diese beendete Serie endgültig löschen?') ? 'delete' : null)
-      : prompt('Was möchtest du tun?\n1 = Serie ab heute beenden (vergangene Termine bleiben)\n2 = Serie komplett löschen', '1');
+    const choice = ended
+      ? ((await confirmDialog('Diese beendete Serie endgültig löschen?', { confirmLabel: 'Löschen', danger: true })) ? 'delete' : null)
+      : await choiceDialog('Was soll mit diesem wöchentlichen Termin passieren?', [
+        { value: '1', label: 'Ab heute beenden (vergangene Termine bleiben)' },
+        { value: '2', label: 'Komplett löschen', danger: true },
+      ], { title: 'Serie beenden oder löschen' });
     try {
       if (choice === '1') {
         const yesterday = ymd(addDays(new Date(), -1));
@@ -40,7 +45,7 @@ export default function AppointmentsTab() {
       else if (choice === '2' || choice === 'delete') { await api.remove('series', s.id); toast('Serie gelöscht'); }
       else return;
       await reloadData();
-    } catch (e) { alert(e.message); }
+    } catch (e) { alertDialog(e.message); }
   };
 
   return (
@@ -86,8 +91,8 @@ export default function AppointmentsTab() {
               </div>
               <button className="icon-btn" onClick={() => setForm({ event: e })} aria-label="Bearbeiten"><Icon name="edit" /></button>
               <button className="icon-btn" aria-label="Löschen" onClick={async () => {
-                if (!confirm('Termin löschen?')) return;
-                try { await api.remove('events', e.id); toast('Gelöscht'); reload(); } catch (err) { alert(err.message); }
+                if (!(await confirmDialog('Termin löschen?', { confirmLabel: 'Löschen', danger: true }))) return;
+                try { await api.remove('events', e.id); toast('Gelöscht'); reload(); } catch (err) { alertDialog(err.message); }
               }}><Icon name="trash" /></button>
             </li>
           ))}

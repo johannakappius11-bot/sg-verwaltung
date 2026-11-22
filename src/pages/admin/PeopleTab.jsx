@@ -3,6 +3,7 @@ import { api } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
 import { Avatar, ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
 import PhotoInput from '../../components/PhotoInput.jsx';
+import { confirmDialog } from '../../components/dialog.jsx';
 
 export default function PeopleTab({ people, reloadPeople }) {
   const [edit, setEdit] = useState(null);
@@ -56,7 +57,7 @@ function PersonForm({ person, onClose, onSaved }) {
     } catch (e) { setError(e.message); }
   }
   async function del() {
-    if (!confirm(`„${person.name}" löschen? Die Person wird auch als Ansprechpartner und aus dem Vorstand entfernt.`)) return;
+    if (!(await confirmDialog(`„${person.name}" löschen? Die Person wird auch als Ansprechpartner und aus dem Vorstand entfernt.`))) return;
     try { await api.remove('people', person.id); if (person.photo_path) api.deletePhoto(person.photo_path); await onSaved(); await reloadData(); onClose(); } catch (e) { setError(e.message); }
   }
 

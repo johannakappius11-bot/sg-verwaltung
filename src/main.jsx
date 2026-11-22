@@ -11,6 +11,6 @@ createRoot(document.getElementById('root')).render(
 );
 
 // Service Worker (Offline-Start, Installierbarkeit) – nur in der fertigen Version
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+if ('serviceWorker' in navigator && import.meta.env.PROD && import.meta.env.VITE_ROUTER !== 'memory') {
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }

@@ -3,6 +3,7 @@ import { api } from '../../data/api.js';
 import { config } from '../../config.js';
 import { useApp } from '../../store.jsx';
 import { ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
+import { confirmDialog } from '../../components/dialog.jsx';
 
 export default function BoardTab({ people }) {
   const { data, personById } = useApp();
@@ -40,7 +41,7 @@ function BoardForm({ entry, people, onClose }) {
     catch (e) { setError(e.message); }
   }
   async function del() {
-    if (!confirm('Eintrag entfernen? (Die Person selbst bleibt erhalten.)')) return;
+    if (!(await confirmDialog('Eintrag entfernen? (Die Person selbst bleibt erhalten.)'))) return;
     try { await api.remove('board_members', entry.id); await reloadData(); onClose(); } catch (e) { setError(e.message); }
   }
   return (

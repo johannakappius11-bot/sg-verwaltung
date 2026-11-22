@@ -3,6 +3,7 @@ import { api, isDemo } from '../data/api.js';
 import { useApp } from '../store.jsx';
 import { Avatar, ErrorBox, Field, Link } from '../components/ui.jsx';
 import PhotoInput from '../components/PhotoInput.jsx';
+import { alertDialog, confirmDialog } from '../components/dialog.jsx';
 
 const ROLE = { guest: 'Gast', member: 'Mitglied', trainer: 'Trainer/in', admin: 'Admin / Vorstand' };
 
@@ -79,8 +80,8 @@ export default function ProfilePage() {
         <button className="btn btn-block" onClick={() => api.signOut()}>Abmelden</button>
         {!isDemo && (
           <button className="btn btn-block btn-danger" onClick={async () => {
-            if (!confirm('Konto wirklich löschen? Deine Daten (Telefon, Foto) werden entfernt. Falls du als Trainer oder im Vorstand eingetragen bist, bleibt nur dein Name dort stehen, bis ein Admin den Eintrag ändert.')) return;
-            try { await api.rpc('delete_my_account'); await api.signOut(); } catch (e) { alert(e.message); }
+            if (!(await confirmDialog('Konto wirklich löschen? Deine Daten (Telefon, Foto) werden entfernt. Falls du als Trainer oder im Vorstand eingetragen bist, bleibt nur dein Name dort stehen, bis ein Admin den Eintrag ändert.', { confirmLabel: 'Konto löschen', danger: true }))) return;
+            try { await api.rpc('delete_my_account'); await api.signOut(); } catch (e) { alertDialog(e.message); }
           }}>Konto löschen</button>
         )}
       </div>

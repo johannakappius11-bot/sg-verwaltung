@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
 import { Field, Icon } from '../../components/ui.jsx';
+import { alertDialog, confirmDialog, promptDialog } from '../../components/dialog.jsx';
 
 const ROLE = { guest: 'Gast', member: 'Mitglied', trainer: 'Trainer' };
 const linkFor = (inv) => `${window.location.origin}/einladung/${inv.token}`;
@@ -10,17 +11,17 @@ export default function InvitesTab() {
   const { toast } = useApp();
   const [invites, setInvites] = useState([]);
   const [nf, setNf] = useState({ label: '', role: 'member' });
-  const load = () => api.list('invites', { order: 'created_at', desc: true }).then(setInvites).catch((e) => alert(e.message));
+  const load = () => api.list('invites', { order: 'created_at', desc: true }).then(setInvites).catch((e) => alertDialog(e.message));
   useEffect(() => { load(); }, []);
 
-  const create = async (row) => { try { await api.insert('invites', row); toast('Link erstellt'); load(); } catch (e) { alert(e.message); } };
+  const create = async (row) => { try { await api.insert('invites', row); toast('Link erstellt'); load(); } catch (e) { alertDialog(e.message); } };
   const share = async (inv) => {
     const url = linkFor(inv);
     const text = 'Einladung zum Platzplan der SG Schamede/Thüle';
     try {
       if (navigator.share) { await navigator.share({ title: text, text, url }); return; }
     } catch (e) { if (e.name === 'AbortError') return; }
-    try { await navigator.clipboard.writeText(url); toast('Link kopiert'); } catch { prompt('Link kopieren:', url); }
+    try { await navigator.clipboard.writeText(url); toast('Link kopiert'); } catch { promptDialog('Bitte den Link markieren und kopieren:', url, { title: 'Link kopieren' }); }
   };
 
   return (
@@ -51,7 +52,7 @@ export default function InvitesTab() {
               <button className="btn btn-sm" onClick={async () => { await api.update('invites', inv.id, { active: !inv.active }); load(); }}>{inv.active ? 'Deaktivieren' : 'Aktivieren'}</button>
               {inv.active && (
                 <button className="btn btn-sm" onClick={async () => {
-                  if (!confirm('Neuen Link erzeugen? Der bisherige Link funktioniert danach nicht mehr.')) return;
+                  if (!(await confirmDialog('Neuen Link erzeugen? Der bisherige Link funktioniert danach nicht mehr.'))) return;
                   await api.update('invites', inv.id, { active: false });
                   await create({ label: inv.label, role: inv.role });
                 }}>Neu erzeugen</button>

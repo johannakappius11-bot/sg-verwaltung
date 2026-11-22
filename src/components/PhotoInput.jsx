@@ -1,6 +1,7 @@
 // Foto auswählen, auf 400 px verkleinern (Datensparsamkeit) und hochladen
 import { useState } from 'react';
 import { api } from '../data/api.js';
+import { alertDialog } from './dialog.jsx';
 
 export async function resizeImage(file, max = 400) {
   const url = URL.createObjectURL(file);
@@ -24,7 +25,7 @@ export default function PhotoInput({ folder, onUploaded, label = 'Foto auswähle
         if (!file) return;
         setBusy(true);
         try { const blob = await resizeImage(file); const path = await api.uploadPhoto(blob, folder); await onUploaded(path); }
-        catch (err) { alert('Foto konnte nicht hochgeladen werden: ' + err.message); }
+        catch (err) { alertDialog('Foto konnte nicht hochgeladen werden: ' + err.message); }
         setBusy(false);
       }} />
     </label>

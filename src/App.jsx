@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import InstallPage from './pages/InstallPage.jsx';
 import { ImpressumPage, DatenschutzPage } from './pages/LegalPages.jsx';
+import { DialogHost, confirmDialog } from './components/dialog.jsx';
 
 // Seiten, die ohne Anmeldung erreichbar sind
 const PUBLIC = [
@@ -64,7 +65,7 @@ function DemoBar() {
       <select value={me.id} onChange={(e) => api.demoLogin(e.target.value)} aria-label="Demo-Rolle wechseln">
         {api.demoUsers.map((u) => <option key={u.key} value={u.key}>{labels[u.role]}</option>)}
       </select>
-      <button className="btn btn-sm" onClick={() => { if (confirm('Alle Demo-Daten auf Anfang zurücksetzen?')) { api.resetDemo(); location.reload(); } }}>Zurücksetzen</button>
+      <button className="btn btn-sm" onClick={async () => { if (await confirmDialog('Alle Demo-Daten auf Anfang zurücksetzen?')) { api.resetDemo(); location.reload(); } }}>Zurücksetzen</button>
     </div>
   );
 }
@@ -107,6 +108,7 @@ function Shell({ children, nav, path }) {
       <main className="app-main">{children}</main>
       {nav && <BottomNav path={path} />}
       <Toast />
+      <DialogHost />
     </div>
   );
 }

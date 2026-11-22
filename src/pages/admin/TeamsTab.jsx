@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
 import { ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
+import { confirmDialog } from '../../components/dialog.jsx';
 
 export default function TeamsTab({ people }) {
   const { data, fieldById, contactsForTeam } = useApp();
@@ -48,7 +49,7 @@ function TeamForm({ team, people, onClose }) {
     } catch (e) { setError(e.message); }
   }
   async function del() {
-    if (!confirm(`Mannschaft „${team.name}" mit allen Terminen löschen? Tipp: Stattdessen „aktiv" abwählen, dann bleiben die Daten erhalten.`)) return;
+    if (!(await confirmDialog(`Mannschaft „${team.name}" mit allen Terminen löschen? Tipp: Stattdessen „aktiv" abwählen, dann bleiben die Daten erhalten.`))) return;
     try { await api.remove('teams', team.id); await reloadData(); toast('Gelöscht'); onClose(); } catch (e) { setError(e.message); }
   }
   async function addContact() {

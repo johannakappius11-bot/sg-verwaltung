@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
 import { ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
+import { confirmDialog } from '../../components/dialog.jsx';
 
 export default function FieldsTab() {
   const { data } = useApp();
@@ -35,7 +36,7 @@ function FieldForm({ field, onClose }) {
     catch (e) { setError(e.message); }
   }
   async function del() {
-    if (!confirm('Platz löschen? Alle regelmäßigen Termine auf diesem Platz werden ebenfalls gelöscht!')) return;
+    if (!(await confirmDialog('Platz löschen? Alle regelmäßigen Termine auf diesem Platz werden ebenfalls gelöscht!'))) return;
     try { await api.remove('fields', field.id); await reloadData(); onClose(); } catch (e) { setError(e.message); }
   }
   return (
