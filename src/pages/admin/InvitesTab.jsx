@@ -57,10 +57,17 @@ export default function InvitesTab() {
                   await create({ label: inv.label, role: inv.role });
                 }}>Neu erzeugen</button>
               )}
+              <button className="btn btn-sm btn-danger" aria-label="Einladungslink löschen" onClick={async () => {
+                const msg = `Einladungslink „${inv.label || 'Einladungslink'}“ endgültig löschen? Der Link funktioniert danach nicht mehr. `
+                  + 'Wer sich darüber schon registriert hat, behält sein Konto.';
+                if (!(await confirmDialog(msg, { title: 'Link löschen', confirmLabel: 'Löschen', danger: true }))) return;
+                try { await api.remove('invites', inv.id); toast('Link gelöscht'); load(); } catch (e) { alertDialog(e.message); }
+              }}><Icon name="trash" size={16} /> Löschen</button>
             </div>
           </li>
         ))}
       </ul>
+      {!invites.length && <p className="empty">Noch keine Einladungslinks. Erstelle oben einen neuen Link.</p>}
     </div>
   );
 }
