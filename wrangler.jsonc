@@ -1,7 +1,7 @@
 // Nur relevant, falls Cloudflare das Projekt als "Worker" (statt "Pages") baut.
 // Bei Cloudflare Pages wird diese Datei ignoriert.
 {
-  "name": "sg-verwaltung1",
+  "name": "platzplan",
   "compatibility_date": "2025-06-01",
   "assets": {
     "directory": "./dist",
