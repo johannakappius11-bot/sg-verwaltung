@@ -4,6 +4,7 @@
 export const config = {
   appName: 'Platzplan SG',
   title: 'SG Scharmede/Thüle',
+  subtitle: 'Organisations-App',       // Zeile unter dem Namen im Kopf der App
   clubs: ['SC Concordia Scharmede', 'VfL Thüle'],
 
   // Logos: Dateien in den Ordner public/logos legen und hier den Dateinamen eintragen.

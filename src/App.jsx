@@ -29,7 +29,7 @@ function Header() {
       <img src={config.logoLeft} alt={config.clubs[0]} className="logo" />
       <div className="app-title">
         <strong>{config.title}</strong>
-        <span>Platzbelegung</span>
+        <span>{config.subtitle}</span>
       </div>
       <img src={config.logoRight} alt={config.clubs[1]} className="logo" />
     </header>
