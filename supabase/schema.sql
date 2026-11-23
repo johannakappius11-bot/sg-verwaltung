@@ -57,6 +57,7 @@ create table if not exists public.teams (
   name             text not null,          -- "1. Herren"
   short_name       text not null,          -- "1. H" (für kleine Kalenderblöcke)
   category         text,                   -- "Senioren", "Junioren", "Frauen" …
+  club             text,                   -- Verein oder SG (gemeinsame Mannschaft)
   home_field_id    uuid references public.fields(id) on delete set null,
   fussballde_widget_id text,               -- optional: Widget-ID von fussball.de
   ical_url         text,                   -- optional: Kalender-Abo-Adresse für Spiele
@@ -75,15 +76,20 @@ create table if not exists public.team_contacts (
   unique (team_id, person_id)
 );
 
--- Vorstand
+-- Ansprechpartner (Vorstand und weitere Funktionen; Tabellenname aus Kompatibilitätsgründen)
 create table if not exists public.board_members (
   id              uuid primary key default gen_random_uuid(),
   person_id       uuid not null references public.people(id) on delete cascade,
   position        text not null,          -- "1. Vorsitzender"
   club            text,                   -- "SC Concordia Scharmede" / "VfL Thüle" / "SG"
   responsibility  text,                   -- "Platzbelegung, Jugend"
+  category        text not null default 'Vorstand', -- Bereich: Vorstand, Jugendabteilung, Spielbetrieb …
   sort            int not null default 0
 );
+
+-- Ergänzungen für ältere Installationen
+alter table public.teams add column if not exists club text;
+alter table public.board_members add column if not exists category text not null default 'Vorstand';
 
 -- Wiederkehrende Termine (z. B. jeden Dienstag 18:00–19:30)
 create table if not exists public.series (

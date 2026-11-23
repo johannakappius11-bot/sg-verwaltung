@@ -20,7 +20,7 @@ const PUBLIC = [
 ];
 const PRIVATE = [
   ['/', PlanPage], ['/plan', PlanPage], ['/mannschaften', TeamsPage], ['/mannschaften/:id', TeamPage],
-  ['/vorstand', BoardPage], ['/profil', ProfilePage], ['/verwaltung', AdminPage], ['/verwaltung/:tab', AdminPage],
+  ['/ansprechpartner', BoardPage], ['/vorstand', BoardPage], ['/profil', ProfilePage], ['/verwaltung', AdminPage], ['/verwaltung/:tab', AdminPage],
 ];
 
 function Header() {
@@ -39,7 +39,7 @@ function Header() {
 function BottomNav({ path }) {
   const { canManage } = useApp();
   const items = [
-    ['/', 'Plan', 'calendar'], ['/mannschaften', 'Teams', 'users'], ['/vorstand', 'Vorstand', 'star'],
+    ['/', 'Plan', 'calendar'], ['/mannschaften', 'Teams', 'users'], ['/ansprechpartner', 'Ansprech\u00adpartner', 'star'],
     ...(canManage ? [['/verwaltung', 'Verwalten', 'settings']] : []),
     ['/profil', 'Profil', 'user'],
   ];

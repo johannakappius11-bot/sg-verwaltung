@@ -20,9 +20,9 @@ begin
 seed.sites.forEach(x => s += `insert into public.sites (id,name,short_name,address,color,sort) values (${q(uid('site'+x.key))},${q(x.name)},${q(x.short_name)},${q(x.address)},${q(x.color)},${x.sort}) on conflict do nothing;\n`);
 seed.fields.forEach(f => s += `insert into public.fields (id,site_id,name,short_name,sort) values (${q(uid('f'+f.key))},${q(uid('site'+f.site))},${q(f.name)},${q(f.short_name)},${f.sort}) on conflict do nothing;\n`);
 seed.people.forEach(p => s += `insert into public.people (id,name,phone,email,consent) values (${q(uid(p.key))},${q(p.name)},${q(p.phone)},${q(p.email)},${p.consent}) on conflict do nothing;\n`);
-seed.teams.forEach((t, i) => s += `insert into public.teams (id,name,short_name,category,home_field_id,sort) values (${q(uid('t'+t.key))},${q(t.name)},${q(t.short_name)},${q(t.category)},${q(uid('f'+t.home))},${i+1}) on conflict do nothing;\n`);
+seed.teams.forEach((t, i) => s += `insert into public.teams (id,name,short_name,category,club,home_field_id,sort) values (${q(uid('t'+t.key))},${q(t.name)},${q(t.short_name)},${q(t.category)},${q(t.club)},${q(uid('f'+t.home))},${i+1}) on conflict do nothing;\n`);
 seed.contacts.forEach(([t, p, role, prim], i) => s += `insert into public.team_contacts (team_id,person_id,role,is_primary,sort) values (${q(uid('t'+t))},${q(uid(p))},${q(role)},${prim},${i}) on conflict do nothing;\n`);
-seed.board.forEach(([p, pos, club, resp, sort]) => s += `insert into public.board_members (id,person_id,position,club,responsibility,sort) values (${q(uid('b'+p))},${q(uid(p))},${q(pos)},${q(club)},${q(resp)},${sort}) on conflict do nothing;\n`);
+seed.board.forEach(([p, pos, club, resp, sort, cat]) => s += `insert into public.board_members (id,person_id,position,club,responsibility,sort,category) values (${q(uid('b'+p))},${q(uid(p))},${q(pos)},${q(club)},${q(resp)},${sort},${q(cat)}) on conflict do nothing;\n`);
 seed.series.forEach(([t, f, wd, a, b], i) => s += `insert into public.series (id,team_id,field_id,kind,weekday,start_time,end_time,valid_from) values (${q(uid('s'+i))},${q(uid('t'+t))},${q(uid('f'+f))},'training',${wd},'${a}','${b}',wk - 28) on conflict do nothing;\n`);
 seed.games.forEach((g, i) => {
   const field = g.away ? 'null' : q(uid('f' + seed.teams.find(t => t.key === g.team).home));

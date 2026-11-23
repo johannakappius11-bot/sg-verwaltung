@@ -10,6 +10,14 @@ export const config = {
   logoLeft: '/logos/scharmede.svg',
   logoRight: '/logos/thuele.svg',
 
+  // Vereine für Filter: Mannschaften/Ansprechpartner der SG erscheinen bei beiden Vereinen
+  clubFilter: [
+    { value: 'SC Concordia Scharmede', label: 'Scharmede' },
+    { value: 'VfL Thüle', label: 'Thüle' },
+  ],
+  // Bereiche auf der Seite "Ansprechpartner"
+  contactGroups: ['Vorstand', 'Jugendabteilung', 'Spielbetrieb', 'Sportanlage & Platzpflege', 'Sonstige'],
+
   // Woran erkennt der Import ein Heimspiel? (Teil des Mannschaftsnamens in fussball.de)
   homeKeywords: ['Scharmede', 'Thüle', 'Thuele'],
 

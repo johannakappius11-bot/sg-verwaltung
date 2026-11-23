@@ -16,7 +16,7 @@ const TABS = [
   ['spiele', 'Spiele & Import', GamesTab, false],
   ['mannschaften', 'Mannschaften', TeamsTab, true],
   ['personen', 'Personen', PeopleTab, true],
-  ['vorstand', 'Vorstand', BoardTab, true],
+  ['ansprechpartner', 'Ansprechpartner', BoardTab, true],
   ['plaetze', 'Plätze', FieldsTab, true],
   ['nutzer', 'Nutzer', UsersTab, true],
   ['einladungen', 'Einladungen', InvitesTab, true],

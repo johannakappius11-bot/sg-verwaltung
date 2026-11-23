@@ -10,13 +10,13 @@ export default function BoardTab({ people }) {
   const [edit, setEdit] = useState(null);
   return (
     <div>
-      <button className="btn btn-primary btn-block" onClick={() => setEdit({})}><Icon name="plus" /> Vorstandsmitglied hinzufügen</button>
+      <button className="btn btn-primary btn-block" onClick={() => setEdit({})}><Icon name="plus" /> Ansprechpartner hinzufügen</button>
       <ul className="list">
         {data.board.map((b) => (
           <li key={b.id} className="list-item">
             <div className="grow">
               <div className="list-title">{personById[b.person_id]?.name}</div>
-              <div className="muted small">{b.position} · {b.club}{b.responsibility ? ` · ${b.responsibility}` : ''}</div>
+              <div className="muted small">{b.category || 'Vorstand'} · {b.position} · {b.club}{b.responsibility ? ` · ${b.responsibility}` : ''}</div>
             </div>
             <button className="icon-btn" onClick={() => setEdit(b)} aria-label="Bearbeiten"><Icon name="edit" /></button>
           </li>
@@ -31,11 +31,11 @@ export default function BoardTab({ people }) {
 function BoardForm({ entry, people, onClose }) {
   const { data, reloadData, toast } = useApp();
   const isNew = !entry.id;
-  const [f, setF] = useState({ person_id: entry.person_id || '', position: entry.position || '', club: entry.club || config.clubs[0], responsibility: entry.responsibility || '', sort: entry.sort ?? data.board.length + 1 });
+  const [f, setF] = useState({ person_id: entry.person_id || '', position: entry.position || '', category: entry.category || config.contactGroups[0], club: entry.club || config.clubs[0], responsibility: entry.responsibility || '', sort: entry.sort ?? data.board.length + 1 });
   const [error, setError] = useState('');
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
   async function save() {
-    if (!f.person_id || !f.position.trim()) return setError('Bitte Person und Amt angeben.');
+    if (!f.person_id || !f.position.trim()) return setError('Bitte Person und Funktion angeben.');
     const row = { ...f, sort: Number(f.sort) || 0, responsibility: f.responsibility || null };
     try { if (isNew) await api.insert('board_members', row); else await api.update('board_members', entry.id, row); await reloadData(); toast('Gespeichert'); onClose(); }
     catch (e) { setError(e.message); }
@@ -45,7 +45,7 @@ function BoardForm({ entry, people, onClose }) {
     try { await api.remove('board_members', entry.id); await reloadData(); onClose(); } catch (e) { setError(e.message); }
   }
   return (
-    <Sheet title={isNew ? 'Vorstandsmitglied' : 'Eintrag bearbeiten'} onClose={onClose}
+    <Sheet title={isNew ? 'Neuer Ansprechpartner' : 'Eintrag bearbeiten'} onClose={onClose}
       footer={<div className="row gap">{!isNew && <button className="btn btn-danger" onClick={del}><Icon name="trash" /></button>}<button className="btn btn-primary grow" onClick={save}>Speichern</button></div>}>
       <div className="form">
         <Field label="Person" hint="Neue Personen unter „Personen“ anlegen.">
@@ -54,13 +54,18 @@ function BoardForm({ entry, people, onClose }) {
             {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </Field>
-        <Field label="Amt"><input value={f.position} onChange={set('position')} placeholder="z. B. 1. Vorsitzender" /></Field>
+        <Field label="Bereich">
+          <select id="board-category" value={f.category} onChange={set('category')}>
+            {config.contactGroups.map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </Field>
+        <Field label="Funktion"><input id="board-position" value={f.position} onChange={set('position')} placeholder="z. B. 1. Vorsitzender, Platzwart, Zeugwart" /></Field>
         <Field label="Verein">
           <select value={f.club} onChange={set('club')}>
             {[...config.clubs, config.title].map((c) => <option key={c}>{c}</option>)}
           </select>
         </Field>
-        <Field label="Zuständig für"><input value={f.responsibility} onChange={set('responsibility')} placeholder="z. B. Platzbelegung, Jugend" /></Field>
+        <Field label="Zuständig für"><input value={f.responsibility} onChange={set('responsibility')} placeholder="z. B. Platzbelegung, Flutlicht, Trikots" /></Field>
         <Field label="Reihenfolge"><input type="number" inputMode="numeric" value={f.sort} onChange={set('sort')} /></Field>
         <ErrorBox error={error} />
       </div>

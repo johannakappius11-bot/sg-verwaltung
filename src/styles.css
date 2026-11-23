@@ -366,3 +366,18 @@ a.list-item:active, li.list-item[onclick]:active { background: var(--surface-2);
 .site-card { display: grid; gap: 10px; }
 .list.list-inner { margin: 0; }
 .list-inner .list-item { min-height: 52px; }
+
+/* Listenfilter (Mannschaften, Ansprechpartner) */
+.list-filter { display: grid; gap: 6px; margin-bottom: 8px; }
+.lf-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lf-label { flex: none; width: 72px; font-size: .8rem; font-weight: 600; color: var(--muted); }
+.lf-chips { display: flex; gap: 6px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; padding: 1px 0; }
+.lf-chips::-webkit-scrollbar { display: none; }
+.lf-chips .chip { flex: none; }
+.lf-foot { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
+.lf-foot .link-btn { min-height: 36px; padding: 6px 2px; }
+.badge { margin-left: 6px; }
+.badge-sg { background: var(--primary); color: var(--primary-text); }
+.dot.dot-sm { width: 9px; height: 9px; vertical-align: 0; }
+.card-kicker { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+.bottom-nav a span { text-align: center; line-height: 1.1; hyphens: manual; -webkit-hyphens: manual; }

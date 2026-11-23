@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
+import { config } from '../../config.js';
 import { ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
 import { confirmDialog } from '../../components/dialog.jsx';
 
@@ -30,7 +31,7 @@ function TeamForm({ team, people, onClose }) {
   const { data, reloadData, toast, contactsForTeam, fieldLabel } = useApp();
   const isNew = !team.id;
   const [f, setF] = useState({
-    name: team.name || '', short_name: team.short_name || '', category: team.category || 'Junioren',
+    name: team.name || '', short_name: team.short_name || '', category: team.category || 'Junioren', club: team.club || config.title,
     home_field_id: team.home_field_id || data.fields[0]?.id || '', active: team.active ?? true,
     sort: team.sort ?? data.teams.length + 1, fussballde_widget_id: team.fussballde_widget_id || '', ical_url: team.ical_url || '',
   });
@@ -69,6 +70,11 @@ function TeamForm({ team, people, onClose }) {
         <Field label="Bereich">
           <select value={f.category} onChange={set('category')}>
             {['Senioren', 'Frauen', 'Junioren', 'Juniorinnen', 'Weitere'].map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </Field>
+        <Field label="Verein" hint="SG = gemeinsame Mannschaft, erscheint im Filter bei beiden Vereinen.">
+          <select id="team-club" value={f.club} onChange={set('club')}>
+            {[...config.clubs, config.title].map((c) => <option key={c} value={c}>{c === config.title ? `${c} (gemeinsam)` : c}</option>)}
           </select>
         </Field>
         <Field label="Heimplatz">
