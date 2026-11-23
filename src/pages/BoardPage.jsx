@@ -1,14 +1,33 @@
-// Seite "Ansprechpartner": Vorstand und weitere Funktionen (Jugend, Platzwart, Schiedsrichter …)
+// Seite "Ansprechpartner": Vorstand, weitere Funktionen und Trainer/Betreuer der Mannschaften.
+// Umschalter: Liste (mit Filter) oder Organigramm (Vorstand je Verein).
+import { useState } from 'react';
 import { config } from '../config.js';
 import { useApp } from '../store.jsx';
-import { Empty, PersonCard } from '../components/ui.jsx';
+import { Empty, Link, PersonCard } from '../components/ui.jsx';
 import ListFilter, { clubLabel, matchesClub, norm, usePersistentFilter } from '../components/ListFilter.jsx';
+import OrgChart from './OrgChart.jsx';
+
+const TEAM_CAT = 'Trainer & Betreuer';
+const VIEW_KEY = 'platzplan-contacts-view';
 
 export default function BoardPage() {
   const { data, personById } = useApp();
   const [filter, setFilter] = usePersistentFilter('platzplan-contacts-filter', { q: '', club: [], cat: [] });
-  const all = data.board;
-  const cats = [...config.contactGroups, ...new Set(all.map((b) => b.category || 'Vorstand').filter((c) => !config.contactGroups.includes(c)))];
+  const [view, setViewState] = useState(() => { try { return localStorage.getItem(VIEW_KEY) || 'liste'; } catch { return 'liste'; } });
+  const setView = (v) => { setViewState(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* */ } };
+
+  // Trainer, Co-Trainer und Betreuer der aktiven Mannschaften als eigene Einträge
+  const teamEntries = data.contacts
+    .map((c) => ({ c, team: data.teams.find((t) => t.id === c.team_id) }))
+    .filter(({ team }) => team?.active)
+    .sort((a, b) => a.team.sort - b.team.sort || (b.c.is_primary - a.c.is_primary) || a.c.sort - b.c.sort)
+    .map(({ c, team }) => ({ id: `tc-${c.id}`, person_id: c.person_id, position: c.role, club: team.club, responsibility: team.name, category: TEAM_CAT, team }));
+  const all = [...data.board, ...teamEntries];
+
+  // Reihenfolge der Bereiche: Trainer & Betreuer nach der Jugendabteilung
+  const base = [...config.contactGroups];
+  base.splice(Math.max(base.indexOf('Jugendabteilung') + 1, 1), 0, TEAM_CAT);
+  const cats = [...base, ...new Set(all.map((b) => b.category || 'Vorstand').filter((c) => !base.includes(c)))];
 
   const shown = all.filter((b) => {
     if (!matchesClub(b.club, filter.club)) return false;
@@ -24,26 +43,38 @@ export default function BoardPage() {
   return (
     <div className="page">
       <h1>Ansprechpartner</h1>
-      <ListFilter id="contacts" value={filter} onChange={setFilter} count={shown.length} total={all.length}
-        placeholder="Name oder Thema suchen …"
-        groups={[
-          { key: 'club', label: 'Verein', options: config.clubFilter.map((c) => ({ value: c.value, label: c.label })) },
-          { key: 'cat', label: 'Bereich', options: cats.filter((c) => all.some((b) => (b.category || 'Vorstand') === c)).map((c) => ({ value: c, label: c })) },
-        ]} />
-      {!all.length && <Empty>Noch keine Ansprechpartner eingetragen.</Empty>}
-      {all.length > 0 && !shown.length && <Empty>Niemand passt zu diesem Filter.</Empty>}
-      {groups.map((c) => (
-        <section key={c}>
-          <h2 className="group-title">{c}</h2>
-          {shown.filter((b) => (b.category || 'Vorstand') === c).map((b) => (
-            <div key={b.id} className="card">
-              <div className="card-kicker">{b.position}{b.club && <span className={`badge ${clubLabel(b.club) === 'SG' ? 'badge-sg' : ''}`}>{clubLabel(b.club)}</span>}</div>
-              <PersonCard person={personById[b.person_id]} subtitle={b.responsibility ? `Zuständig für: ${b.responsibility}` : null} />
-            </div>
+      <div className="seg seg-sm view-switch" role="tablist" aria-label="Ansicht">
+        {[['liste', 'Liste'], ['organigramm', 'Organigramm']].map(([k, l]) => (
+          <button key={k} role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => setView(k)}>{l}</button>
+        ))}
+      </div>
+
+      {view === 'organigramm' ? <OrgChart /> : (
+        <>
+          <ListFilter id="contacts" value={filter} onChange={setFilter} count={shown.length} total={all.length}
+            placeholder="Name, Mannschaft oder Thema suchen …"
+            groups={[
+              { key: 'club', label: 'Verein', options: config.clubFilter.map((c) => ({ value: c.value, label: c.label })) },
+              { key: 'cat', label: 'Bereich', options: cats.filter((c) => all.some((b) => (b.category || 'Vorstand') === c)).map((c) => ({ value: c, label: c })) },
+            ]} />
+          {!all.length && <Empty>Noch keine Ansprechpartner eingetragen.</Empty>}
+          {all.length > 0 && !shown.length && <Empty>Niemand passt zu diesem Filter.</Empty>}
+          {groups.map((c) => (
+            <section key={c}>
+              <h2 className="group-title">{c}</h2>
+              {shown.filter((b) => (b.category || 'Vorstand') === c).map((b) => (
+                <div key={b.id} className="card">
+                  <div className="card-kicker">
+                    {b.team ? <>{b.position} · <Link to={`/mannschaften/${b.team.id}`}>{b.team.name}</Link></> : b.position}
+                    {b.club && <span className={`badge ${clubLabel(b.club) === 'SG' ? 'badge-sg' : ''}`}>{clubLabel(b.club)}</span>}
+                  </div>
+                  <PersonCard person={personById[b.person_id]} subtitle={!b.team && b.responsibility ? `Zuständig für: ${b.responsibility}` : null} />
+                </div>
+              ))}
+            </section>
           ))}
-        </section>
-      ))}
-      <p className="muted small">Trainer und Betreuer findest du bei den Mannschaften.</p>
+        </>
+      )}
     </div>
   );
 }

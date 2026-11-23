@@ -5,7 +5,7 @@ Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert 
 - 📅 **Gemeinsamer Wochenplan** für beide Sportanlagen (Thüle mit zwei Plätzen), farbig nach Ort (Scharmede grün, Thüle rot, auswärts grau), Wochen- und Tagesansicht, Wischen zum Blättern
 - 🔎 **Filter** nach Ort, Art (Training/Spiel/Sonstiges) und Mannschaft. Training = helle Fläche mit Farbstreifen, Spiel = kräftig ausgefüllt mit Ball-Symbol
 - ⚽ **Spiele**: Heimspiele belegen den Platz, Auswärtsspiele stehen als „Auswärts" mit Gegner und Spielort im Plan
-- 👥 **Mannschaften** mit Trainern/Betreuern und **Ansprechpartner** (Vorstand, Jugend, Spielbetrieb, Platzwarte …) mit Zuständigkeiten – beide filterbar nach Verein (SG-Einträge bei beiden), Bereich und per Suche
+- 👥 **Mannschaften** mit Trainern/Betreuern und **Ansprechpartner** (Vorstand, Jugend, Trainer & Betreuer, Spielbetrieb, Platzwarte …) inkl. **Organigramm** der Vorstände mit Zuständigkeiten – beide filterbar nach Verein (SG-Einträge bei beiden), Bereich und per Suche
 - 🔐 **Anmeldung ohne Passwort** (E-Mail-Link oder 6-stelliger Code), Zugang nur per **Einladungslink**
 - 🛠 **Verwaltung**: Trainingszeiten (auch wöchentlich wiederkehrend), Absagen einzelner Termine, **Warnung bei Doppelbelegung**, Import von Spielen (Kalenderdatei/CSV), Personen & Konten, Rollen, Einladungslinks
 - 🛡 **DSGVO**: Foto/Telefon/E-Mail nur mit Einwilligung (jederzeit widerrufbar), Datenbank in Frankfurt
