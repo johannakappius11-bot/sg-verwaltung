@@ -84,7 +84,7 @@ export function DatenschutzPage() {
 
       <h2>3. Welche Daten wir verarbeiten</h2>
       <ul>
-        <li><strong>Konto:</strong> E-Mail-Adresse, Name und Rolle (Gast, Mitglied, Trainer, Admin) – für Anmeldung und
+        <li><strong>Konto:</strong> E-Mail-Adresse, Name und Rolle (Mitglied, Trainer, Admin) – für Anmeldung und
           Rechteverwaltung. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Nutzungsverhältnis bzw. Mitgliedschaft) und
           lit. f DSGVO (berechtigtes Interesse an der Organisation des Trainings- und Spielbetriebs).</li>
         <li><strong>Ansprechpartner (Trainer, Betreuer, Vorstand, weitere Funktionen):</strong> Name und Funktion –

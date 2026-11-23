@@ -141,7 +141,7 @@ create index if not exists events_starts_idx on public.events (starts_at);
 create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   email       text,
-  role        text not null default 'member' check (role in ('guest','member','trainer','admin')),
+  role        text not null default 'member' check (role in ('member','trainer','admin')),
   created_at  timestamptz not null default now()
 );
 
@@ -150,12 +150,20 @@ create table if not exists public.invites (
   id          uuid primary key default gen_random_uuid(),
   token       text not null unique default replace(gen_random_uuid()::text, '-', ''),
   label       text,
-  role        text not null default 'member' check (role in ('guest','member','trainer')),
+  role        text not null default 'member' check (role in ('member','trainer')),
   active      boolean not null default true,
   expires_at  timestamptz,
   uses        int not null default 0,
   created_at  timestamptz not null default now()
 );
+
+-- Rolle "Gast" gibt es nicht mehr: bestehende Gäste werden Mitglieder
+update public.profiles set role = 'member' where role = 'guest';
+update public.invites  set role = 'member' where role = 'guest';
+alter table public.profiles drop constraint if exists profiles_role_check;
+alter table public.profiles add constraint profiles_role_check check (role in ('member','trainer','admin'));
+alter table public.invites drop constraint if exists invites_role_check;
+alter table public.invites add constraint invites_role_check check (role in ('member','trainer'));
 
 -- ---------- Hilfsfunktionen ----------------------------------------
 

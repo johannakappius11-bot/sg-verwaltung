@@ -120,6 +120,5 @@ export const seed = {
     { key: 'u_admin', email: 'admin@demo.de', role: 'admin', person: 'v4' },
     { key: 'u_trainer', email: 'trainer@demo.de', role: 'trainer', person: 'p7' },
     { key: 'u_member', email: 'mitglied@demo.de', role: 'member', person: null, name: 'Max Mitglied' },
-    { key: 'u_guest', email: 'gast@demo.de', role: 'guest', person: null, name: 'Gerda Gast' },
   ],
 };

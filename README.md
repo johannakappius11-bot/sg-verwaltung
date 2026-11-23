@@ -32,7 +32,7 @@ Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert 
 
 Mit `VITE_DEMO=true` (oder ohne eingetragene Datenbank in `src/config.js`) startet die App im **Demo-Modus** mit erfundenen Testdaten
 (12 Mannschaften, Trainingszeiten, Spiele, Vorstand). Oben kann man die Rolle wechseln
-(Admin, Trainerin der D-Jugend, Mitglied, Gast). Demo-Daten bleiben nur im eigenen Browser.
+(Admin, Trainerin der D-Jugend, Mitglied). Demo-Daten bleiben nur im eigenen Browser.
 
 **Auf dem eigenen Computer** (einmalig [Node.js](https://nodejs.org) installieren, Version 20 oder neuer):
 
@@ -87,11 +87,11 @@ Handy (Browser/App)  ──►  App-Dateien (Cloudflare Pages oder Vereins-Websp
 | `series` | Wiederkehrende Termine (z. B. jeden Dienstag 18–19:30, ab/bis Datum) |
 | `series_exceptions` | Einzelne abgesagte Termine einer Serie |
 | `events` | Einzeltermine und Spiele (Heim: mit Platz; Auswärts: Spielort, Gegner) |
-| `profiles` | App-Konten mit Rolle (Gast, Mitglied, Trainer, Admin) |
+| `profiles` | App-Konten mit Rolle (Mitglied, Trainer, Admin) |
 | `invites` | Einladungslinks (Rolle, aktiv/deaktiviert, Anzahl Registrierungen) |
 
 **Die Rechte werden in der Datenbank selbst geprüft** (Row Level Security), nicht nur in der App:
-- Gast & Mitglied: nur lesen
+- Mitglied: nur lesen
 - Trainer: nur Termine der Mannschaften, bei denen sie als Ansprechpartner eingetragen sind
 - Admin: alles
 - Telefon, Foto und E-Mail anderer Personen liefert die Datenbank **nur bei Einwilligung** aus.
@@ -228,7 +228,7 @@ Danach unter **Verwalten → Plätze** die Sportanlagen (Scharmede, Thüle) mit 
 
 **Doppelbelegung:** Beim Speichern prüft die App den Platz (bei wöchentlichen Terminen die nächsten 26 Wochen). Gibt es Überschneidungen, erscheint eine Warnung – man kann trotzdem speichern (z. B. wenn sich zwei Jugendteams den Platz bewusst teilen). Im Plan sind solche Termine orange gestrichelt markiert.
 
-**Rollen:** Gast und Mitglied sehen dasselbe (nur lesen). Unterschied nur für eure Übersicht – z. B. Eltern als „Gast", Vereinsmitglieder als „Mitglied".
+**Rollen:** Mitglied (nur lesen), Trainer (Termine der eigenen Mannschaft pflegen), Admin/Vorstand (alles).
 
 ---
 

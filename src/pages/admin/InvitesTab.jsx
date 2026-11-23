@@ -4,7 +4,7 @@ import { useApp } from '../../store.jsx';
 import { Field, Icon } from '../../components/ui.jsx';
 import { alertDialog, confirmDialog, promptDialog } from '../../components/dialog.jsx';
 
-const ROLE = { guest: 'Gast', member: 'Mitglied', trainer: 'Trainer' };
+const ROLE = { member: 'Mitglied', trainer: 'Trainer' };
 const linkFor = (inv) => `${window.location.origin}/einladung/${inv.token}`;
 
 export default function InvitesTab() {

@@ -3,7 +3,7 @@ import { api } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
 import { alertDialog, confirmDialog } from '../../components/dialog.jsx';
 
-const ROLES = [['guest', 'Gast'], ['member', 'Mitglied'], ['trainer', 'Trainer'], ['admin', 'Admin/Vorstand']];
+const ROLES = [['member', 'Mitglied'], ['trainer', 'Trainer'], ['admin', 'Admin/Vorstand']];
 
 export default function UsersTab({ people }) {
   const { me, toast, data } = useApp();

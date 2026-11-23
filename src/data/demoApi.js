@@ -4,7 +4,7 @@
 import { seed } from './seed.js';
 import { addDays, startOfWeek, combine, ymd } from '../lib/dates.js';
 
-const STORE_KEY = 'platzplan-demo-v4';
+const STORE_KEY = 'platzplan-demo-v5';
 const USER_KEY = 'platzplan-demo-user';
 let counter = 0;
 const newId = () => `d${Date.now().toString(36)}${(counter++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
