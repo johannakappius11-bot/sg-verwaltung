@@ -1,18 +1,20 @@
-// Platzplan: eine gemeinsame Wochen-/Tagesansicht für alle Plätze.
-// Farbe = Ort (Platzfarbe, Auswärts grau). Form = Art: Training hell mit Farbstreifen,
-// Spiel kräftig ausgefüllt mit Ball-Symbol, Sonstiges schraffiert.
+// Platzplan mit drei Ansichten:
+//  Liste  – Termine pro Tag untereinander (Standard auf dem Handy)
+//  Tag    – Zeitraster mit einer Spalte pro Platz (freie Zeiten, Doppelbelegung)
+//  Woche  – Handy: Übersicht Tage × Orte; großer Bildschirm: volles Wochenraster
+// Farbe = Ort (Sportanlage, auswärts grau). Training hell mit Farbstreifen, Spiel kräftig mit Ball.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { config } from '../config.js';
 import { api } from '../data/api.js';
 import { useApp } from '../store.jsx';
 import { addDays, fmtDate, fmtDateLong, hm, isoWeekday, sameDay, startOfWeek, weekLabel, WEEKDAYS, ymd } from '../lib/dates.js';
-import { buildOccurrences, conflictKeys, KIND_LABEL, layoutLanes } from '../lib/schedule.js';
+import { buildOccurrences, conflictKeys, KIND_LABEL } from '../lib/schedule.js';
 import { AWAY_COLOR, tint } from '../lib/colors.js';
 import { Icon, PersonCard, Sheet } from '../components/ui.jsx';
 import EventForm from '../components/EventForm.jsx';
 import { alertDialog, confirmDialog, promptDialog } from '../components/dialog.jsx';
+import { Ball, ListView, ResourceDayView, useIsWide, WeekGridView, WeekSummaryView } from './plan/views.jsx';
 
-const VIEW_KEY = 'platzplan-view';
+const VIEW_KEY = 'platzplan-view2';
 const FILTER_KEY = 'platzplan-filter';
 const store = {
   get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -21,22 +23,17 @@ const store = {
 // hiddenPlaces: ausgeblendete Sportanlagen (+ 'away'), hiddenFields: einzelne ausgeblendete Plätze
 const EMPTY_FILTER = { hiddenPlaces: [], hiddenFields: [], kinds: [], teams: [] }; // kinds/teams leer = alle
 const loadFilter = () => { try { return { ...EMPTY_FILTER, ...JSON.parse(store.get(FILTER_KEY) || '{}') }; } catch { return EMPTY_FILTER; } };
-
-
-export function Ball({ size = 11 }) {
-  return (
-    <svg className="ball" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="#fff" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 7l4 3-1.5 4.5h-5L8 10z" fill="currentColor" />
-    </svg>
-  );
-}
+const VIEWS = [['liste', 'Liste'], ['tag', 'Tag'], ['woche', 'Woche']];
 
 export default function PlanPage() {
   const { data, teamById, fieldById, canManage, editableTeams, siteColor, fieldLabel, me } = useApp();
+  const wide = useIsWide();
   const placeOf = (o) => (o.isAway ? 'away' : fieldById[o.fieldId]?.site_id || 'none');
   const [monday, setMonday] = useState(() => startOfWeek(new Date()));
-  const [view, setView] = useState(() => store.get(VIEW_KEY) || 'woche');
+  const [view, setView] = useState(() => {
+    const v = store.get(VIEW_KEY);
+    return VIEWS.some(([k]) => k === v) ? v : (window.innerWidth < 700 ? 'liste' : 'woche');
+  });
   const [day, setDay] = useState(() => isoWeekday(new Date()));
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,9 +42,17 @@ export default function PlanPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState(loadFilter);
   const [error, setError] = useState('');
+  const barRef = useRef(null);
+  const [barH, setBarH] = useState(52);
 
   useEffect(() => { store.set(VIEW_KEY, view); }, [view]);
   useEffect(() => { store.set(FILTER_KEY, JSON.stringify(filter)); }, [filter]);
+  // Höhe der mitlaufenden Leiste (für die Tagesüberschriften der Liste)
+  useEffect(() => {
+    if (!barRef.current || !window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(() => setBarH(barRef.current?.offsetHeight || 52));
+    ro.observe(barRef.current); return () => ro.disconnect();
+  }, []);
 
   const from = monday; const to = useMemo(() => addDays(monday, 7), [monday]);
   const loadEvents = useCallback(async () => {
@@ -67,14 +72,8 @@ export default function PlanPage() {
     && (!filter.teams.length || filter.teams.includes(o.teamId)));
 
   const days = [...Array(7)].map((_, i) => addDays(monday, i));
-  const shownDays = view === 'tag' ? [days[day - 1]] : days;
   const isThisWeek = sameDay(monday, startOfWeek(new Date()));
-
-  // Sichtbarer Zeitbereich passt sich an die Termine an (weniger Scrollen)
-  const visible = shown.filter((o) => shownDays.some((d) => sameDay(o.start, d)));
-  let startH = visible.length ? Math.min(...visible.map((o) => o.start.getHours())) : config.dayStartHour;
-  let endH = visible.length ? Math.max(...visible.map((o) => (sameDay(o.start, o.end) ? o.end.getHours() + (o.end.getMinutes() ? 1 : 0) : 24))) : config.dayEndHour;
-  if (endH - startH < 5) { startH = Math.max(0, Math.min(startH, endH - 5)); endH = Math.max(endH, startH + 5); }
+  const isToday = view === 'tag' ? sameDay(days[day - 1], new Date()) : isThisWeek;
 
   const shift = (dir) => {
     if (view === 'tag') {
@@ -83,6 +82,7 @@ export default function PlanPage() {
     } else setMonday(addDays(monday, dir * 7));
   };
   const today = () => { setMonday(startOfWeek(new Date())); setDay(isoWeekday(new Date())); };
+  const openDay = (d) => { setDay(d); setView('tag'); window.scrollTo(0, 0); };
 
   // Wischen nach links/rechts blättert
   const touch = useRef(null);
@@ -101,25 +101,44 @@ export default function PlanPage() {
     filter.kinds.length ? filter.kinds.map((k) => KIND_LABEL[k]).join(' + ') : null,
     filter.teams.length ? (filter.teams.length === 1 ? teamById[filter.teams[0]]?.name : `${filter.teams.length} Mannschaften`) : null,
   ].filter(Boolean).join(' · ');
+  const label = view === 'tag' ? fmtDate(days[day - 1]) + days[day - 1].getFullYear() : weekLabel(monday);
 
   return (
-    <div className="plan">
+    <div className="plan" style={{ '--bar-h': `${barH}px` }}>
+      {/* Mitlaufende Leiste: Blättern, Datum, Filter */}
+      <div className="plan-bar" ref={barRef}>
+        <button className="icon-btn" onClick={() => shift(-1)} aria-label={view === 'tag' ? 'Vorheriger Tag' : 'Vorherige Woche'}><Icon name="left" /></button>
+        <button className="plan-label" onClick={today} aria-label={`${label}${isToday ? '' : ' – zu heute springen'}`}>
+          <strong>{label}</strong>
+          <small>{isToday ? (view === 'tag' ? 'heute' : 'diese Woche') : 'antippen: zu heute'}</small>
+        </button>
+        <button className="icon-btn" onClick={() => shift(1)} aria-label={view === 'tag' ? 'Nächster Tag' : 'Nächste Woche'}><Icon name="right" /></button>
+        <button className={`icon-btn filter-icon ${extraCount ? 'active' : ''}`} onClick={() => setFilterOpen(true)} aria-label={`Filter${extraCount ? ` (${extraCount} aktiv)` : ''}`}>
+          <Icon name="filter" />{extraCount > 0 && <span className="count">{extraCount}</span>}
+        </button>
+      </div>
+
       <div className="plan-controls">
-        <div className="filter-row">
-          <div className="place-chips" role="group" aria-label="Orte ein- und ausblenden">
-            {places.map((p) => {
-              const on = !filter.hiddenPlaces.includes(p.key);
-              return (
-                <button key={p.key} className={`place-chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => togglePlace(p.key)}
-                  style={{ '--c': p.color, '--ct': tint(p.color, 0.14) }}>
-                  <i className="dot" />{p.label}
-                </button>
-              );
-            })}
+        <div className="row gap">
+          <div className="seg seg-sm grow" role="tablist" aria-label="Ansicht">
+            {VIEWS.map(([k, l]) => <button key={k} role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => setView(k)}>{l}</button>)}
           </div>
-          <button className={`btn btn-sm filter-btn ${extraCount ? 'active' : ''}`} aria-label="Filter" onClick={() => setFilterOpen(true)}>
-            <Icon name="filter" size={18} /><span className="lbl">Filter</span>{extraCount ? ` (${extraCount})` : ''}
-          </button>
+          {canManage && editableTeams.length > 0 && (
+            <button className="btn btn-sm btn-primary" aria-label="Neuer Termin" onClick={() => setForm({ defaults: { date: ymd(view === 'tag' ? days[day - 1] : (isThisWeek ? new Date() : monday)) } })}>
+              <Icon name="plus" size={18} /><span className="hide-xs">Termin</span>
+            </button>
+          )}
+        </div>
+        <div className="place-chips" role="group" aria-label="Orte ein- und ausblenden">
+          {places.map((p) => {
+            const on = !filter.hiddenPlaces.includes(p.key);
+            return (
+              <button key={p.key} className={`place-chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => togglePlace(p.key)}
+                style={{ '--c': p.color, '--ct': tint(p.color, 0.14) }}>
+                <i className="dot" />{p.label}
+              </button>
+            );
+          })}
         </div>
         {summary && (
           <div className="filter-summary">
@@ -127,26 +146,6 @@ export default function PlanPage() {
             <button className="link-btn" onClick={() => setFilter((f) => ({ ...f, kinds: [], teams: [], hiddenFields: [] }))}>Aufheben</button>
           </div>
         )}
-        <div className="week-nav">
-          <button className="icon-btn" onClick={() => shift(-1)} aria-label={view === 'tag' ? 'Vorheriger Tag' : 'Vorherige Woche'}><Icon name="left" /></button>
-          <div className="week-label">
-            <strong>{view === 'tag' ? fmtDateLong(days[day - 1]) : weekLabel(monday)}</strong>
-            {view === 'woche' && isThisWeek && <span className="muted small"> · diese Woche</span>}
-          </div>
-          <button className="icon-btn" onClick={() => shift(1)} aria-label={view === 'tag' ? 'Nächster Tag' : 'Nächste Woche'}><Icon name="right" /></button>
-        </div>
-        <div className="row gap between">
-          <div className="seg seg-sm">
-            <button className={view === 'woche' ? 'on' : ''} onClick={() => setView('woche')}>Woche</button>
-            <button className={view === 'tag' ? 'on' : ''} onClick={() => setView('tag')}>Tag</button>
-          </div>
-          {(!isThisWeek || (view === 'tag' && day !== isoWeekday(new Date()))) && <button className="btn btn-sm" onClick={today}>Heute</button>}
-          {canManage && editableTeams.length > 0 && (
-            <button className="btn btn-sm btn-primary" onClick={() => setForm({ defaults: { date: ymd(view === 'tag' ? days[day - 1] : (isThisWeek ? new Date() : monday)) } })}>
-              <Icon name="plus" size={18} /> Termin
-            </button>
-          )}
-        </div>
         {view === 'tag' && (
           <div className="day-chips">
             {days.map((d, i) => (
@@ -160,34 +159,19 @@ export default function PlanPage() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      <div className={`grid-wrap ${loading ? 'is-loading' : ''}`} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className={`cal cal-${view}`} style={{ '--cols': shownDays.length }}>
-          <div className="cal-head">
-            <div className="cal-axis-head" />
-            {shownDays.map((d) => (
-              <div key={ymd(d)} className={`cal-day-head ${sameDay(d, new Date()) ? 'today' : ''}`}>
-                <span>{WEEKDAYS[isoWeekday(d) - 1]}</span><strong>{d.getDate()}.</strong>
-              </div>
-            ))}
-          </div>
-          <div className="cal-body" style={{ '--hours': endH - startH }}>
-            <div className="cal-axis">
-              {[...Array(endH - startH)].map((_, i) => <div key={i} className="cal-hour"><span>{startH + i}</span></div>)}
-            </div>
-            {shownDays.map((d) => (
-              <DayColumn key={ymd(d)} day={d} items={shown.filter((o) => sameDay(o.start, d))} startH={startH}
-                conflicts={conflicts} onSelect={setSelected} wide={view === 'tag'} />
-            ))}
-          </div>
-        </div>
-        {!loading && !visible.length && <p className="cal-empty">Keine Termine{shown.length !== all.length ? ' für diese Filterauswahl' : ''} {view === 'tag' ? 'an diesem Tag' : 'in dieser Woche'}.</p>}
+      <div className={`plan-body ${loading ? 'is-loading' : ''}`} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        {view === 'liste' && <ListView days={days} items={shown} conflicts={conflicts} onSelect={setSelected} />}
+        {view === 'tag' && <div className="grid-wrap"><ResourceDayView day={days[day - 1]} items={shown} conflicts={conflicts} onSelect={setSelected} filter={filter} /></div>}
+        {view === 'woche' && (wide
+          ? <div className="grid-wrap"><WeekGridView days={days} items={shown} conflicts={conflicts} onSelect={setSelected} /></div>
+          : <WeekSummaryView days={days} items={shown} conflicts={conflicts} filter={filter} onOpenDay={openDay} />)}
       </div>
 
       <div className="legend" aria-label="Legende">
         <span><i className="sw sw-training" /> Training</span>
         <span><i className="sw sw-spiel"><Ball size={9} /></i> Spiel</span>
         <span><i className="sw sw-sonstiges" /> Sonstiges</span>
-        <span><i className="sw sw-conflict" /> Doppelt belegt</span>
+        <span><i className="sw sw-warn">!</i> Doppelt belegt</span>
       </div>
       <p className="muted small center">Farbe = Ort ({places.map((p) => p.label).join(', ')}). Wischen zum Blättern, Termin antippen für Details.</p>
 
@@ -265,43 +249,6 @@ function FilterSheet({ filter, setFilter, places, myTeamIds, onClose }) {
         </div>
       </div>
     </Sheet>
-  );
-}
-
-function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
-  const { teamById, colorOf, fieldLabel } = useApp();
-  const now = new Date();
-  const nowTop = sameDay(day, now) ? (now.getHours() - startH) * 60 + now.getMinutes() : null;
-  return (
-    <div className="cal-col">
-      {nowTop !== null && nowTop > 0 && <div className="now-line" style={{ top: `calc(${nowTop} * var(--ppm))` }} />}
-      {layoutLanes(items).map(({ item: o, lane, lanes }) => {
-        const top = (o.start.getHours() - startH) * 60 + o.start.getMinutes();
-        const len = (Math.min(o.end, addDays(day, 1)) - o.start) / 60000;
-        const team = teamById[o.teamId];
-        const conflict = conflicts.has(o.key);
-        const color = colorOf(o);
-        const label = o.kind === 'sonstiges' && o.title ? o.title : team?.[wide ? 'name' : 'short_name'] || '–';
-        const where = o.isAway ? 'Auswärts' : fieldLabel(o.fieldId);
-        const code = o.isAway ? '' : fieldLabel(o.fieldId, { short: true });
-        const detail = o.cancelled ? 'fällt aus'
-          : o.kind === 'spiel' ? (o.isAway ? `Auswärts bei ${o.opponent || '?'}` : `Heimspiel gegen ${o.opponent || '?'} · ${where}`)
-            : `${KIND_LABEL[o.kind]} · ${where}`;
-        return (
-          <button key={o.key}
-            className={`block kind-${o.kind} ${o.isAway ? 'is-away' : ''} ${conflict ? 'conflict' : ''} ${o.cancelled ? 'cancelled' : ''}`}
-            style={{ '--c': color, '--ct': tint(color, 0.2), top: `calc(${top} * var(--ppm))`, height: `calc(${len} * var(--ppm) - 2px)`, left: `calc(${lane} * 100% / ${lanes})`, width: `calc(100% / ${lanes} - 2px)` }}
-            onClick={() => onSelect(o)}
-            aria-label={`${team?.name || ''}, ${detail}, ${hm(o.start)} bis ${hm(o.end)}${conflict ? ', Doppelbelegung' : ''}`}>
-            {conflict && <span className="block-warn" aria-hidden="true">!</span>}
-            <span className="block-team">{o.kind === 'spiel' && <Ball />}{label}</span>
-            {(wide || lanes < 3) && <span className="block-time">{hm(o.start)}{wide ? `–${hm(o.end)}` : ''}</span>}
-            {code && !wide && <span className="block-res">{code}</span>}
-            {wide && <span className="block-kind">{detail}</span>}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 

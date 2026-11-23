@@ -30,5 +30,7 @@ export function isoWeek(d) {
 }
 export function weekLabel(monday) {
   const sun = addDays(monday, 6);
-  return `KW ${isoWeek(monday)} · ${pad(monday.getDate())}.${pad(monday.getMonth() + 1)}.–${pad(sun.getDate())}.${pad(sun.getMonth() + 1)}.`;
+  const sameMonth = monday.getMonth() === sun.getMonth();
+  const a = sameMonth ? `${monday.getDate()}.` : `${monday.getDate()}.${monday.getMonth() + 1}.`;
+  return `KW ${isoWeek(monday)} · ${a}–${sun.getDate()}.${sun.getMonth() + 1}.`;
 }
