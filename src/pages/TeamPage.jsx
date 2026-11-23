@@ -30,6 +30,7 @@ export default function TeamPage({ params }) {
     <div className="page">
       <Link to="/mannschaften" className="back"><Icon name="left" size={18} /> Alle Mannschaften</Link>
       <h1>{team.name}</h1>
+      {team.league && <p className="team-league">{team.league}</p>}
       <p className="muted">Heimplatz: {team.home_field_id ? fieldLabel(team.home_field_id, { long: true }) : '–'}</p>
 
       <h2>Ansprechpartner</h2>

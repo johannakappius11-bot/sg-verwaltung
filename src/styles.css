@@ -480,3 +480,5 @@ button.ws-row:active { filter: brightness(.96); }
 .ws-time { font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ws-warn { position: absolute; top: -6px; right: -4px; width: 18px; height: 18px; font-size: .68rem; }
 .sw.sw-warn { width: 16px; height: 16px; border-radius: 50%; background: var(--warn-edge); color: #fff; font-size: .65rem; font-weight: 800; }
+
+.team-league { margin: -8px 0 4px; font-weight: 600; }

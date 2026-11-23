@@ -15,6 +15,10 @@ export const config = {
     { value: 'SC Concordia Scharmede', label: 'Scharmede' },
     { value: 'VfL Thüle', label: 'Thüle' },
   ],
+  // Auswahl beim Anlegen einer Mannschaft
+  teamCategories: ['Senioren', 'Junioren', 'Weitere'],
+  leagues: ['Bezirksliga', 'Kreisliga A', 'Kreisliga B', 'Kreisliga C'],
+
   // Bereiche auf der Seite "Ansprechpartner"
   contactGroups: ['Vorstand', 'Jugendabteilung', 'Spielbetrieb', 'Sportanlage & Platzpflege', 'Sonstige'],
 

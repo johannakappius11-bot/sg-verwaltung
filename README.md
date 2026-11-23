@@ -80,7 +80,7 @@ Handy (Browser/App)  ──►  App-Dateien (Cloudflare Pages oder Vereins-Websp
 |---|---|
 | `sites` | Sportanlagen (Scharmede, Thüle) mit Adresse und Farbe im Plan |
 | `fields` | Plätze je Sportanlage (Scharmede: 1 Platz, Thüle: Platz 1 und Platz 2). Doppelbelegung wird pro Platz geprüft |
-| `teams` | Mannschaften mit Verein (Scharmede, Thüle oder SG), Heimplatz, optional fussball.de-Widget-ID und Kalender-Abo |
+| `teams` | Mannschaften mit Bereich (Senioren, Junioren, Weitere), Liga, Verein (Scharmede, Thüle oder SG), Heimplatz, optional fussball.de-Widget-ID und Kalender-Abo |
 | `people` | Personen (Trainer, Betreuer, Vorstand) – mit oder ohne App-Konto; Telefon/Foto/E-Mail + Einwilligung |
 | `team_contacts` | Wer ist Ansprechpartner welcher Mannschaft (Trainer, Co-Trainer, Betreuer) |
 | `board_members` | Ansprechpartner: Funktion, Bereich (Vorstand, Jugendabteilung …), Verein, Zuständigkeit |

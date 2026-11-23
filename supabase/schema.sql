@@ -58,6 +58,7 @@ create table if not exists public.teams (
   short_name       text not null,          -- "1. H" (für kleine Kalenderblöcke)
   category         text,                   -- "Senioren", "Junioren", "Frauen" …
   club             text,                   -- Verein oder SG (gemeinsame Mannschaft)
+  league           text,                   -- Liga, z. B. "Kreisliga A"
   home_field_id    uuid references public.fields(id) on delete set null,
   fussballde_widget_id text,               -- optional: Widget-ID von fussball.de
   ical_url         text,                   -- optional: Kalender-Abo-Adresse für Spiele
@@ -89,6 +90,7 @@ create table if not exists public.board_members (
 
 -- Ergänzungen für ältere Installationen
 alter table public.teams add column if not exists club text;
+alter table public.teams add column if not exists league text;
 alter table public.board_members add column if not exists category text not null default 'Vorstand';
 
 -- Wiederkehrende Termine (z. B. jeden Dienstag 18:00–19:30)

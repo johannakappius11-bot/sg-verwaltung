@@ -5,13 +5,14 @@ import ListFilter, { clubLabel, matchesClub, norm, usePersistentFilter } from '.
 
 export default function TeamsPage() {
   const { data, contactsForTeam, fieldLabel, fieldById, siteColor } = useApp();
-  const [filter, setFilter] = usePersistentFilter('platzplan-teams-filter', { q: '', club: [], cat: [], site: [] });
+  const [filter, setFilter] = usePersistentFilter('platzplan-teams-filter', { q: '', club: [], cat: [], league: [], site: [] });
   const teams = data.teams.filter((t) => t.active);
   const categories = [...new Set(teams.map((t) => t.category || 'Weitere'))];
 
   const shown = teams.filter((t) => {
     if (!matchesClub(t.club, filter.club)) return false;
     if (filter.cat.length && !filter.cat.includes(t.category || 'Weitere')) return false;
+    if (filter.league?.length && !filter.league.includes(t.league)) return false;
     if (filter.site.length && !filter.site.includes(fieldById[t.home_field_id]?.site_id)) return false;
     if (filter.q) {
       const hay = norm([t.name, t.short_name, ...contactsForTeam(t.id).map((c) => c.person.name)].join(' '));
@@ -29,6 +30,7 @@ export default function TeamsPage() {
         groups={[
           { key: 'club', label: 'Verein', options: config.clubFilter.map((c) => ({ value: c.value, label: c.label })) },
           { key: 'cat', label: 'Bereich', options: categories.map((c) => ({ value: c, label: c })) },
+          ...(teams.some((t) => t.league) ? [{ key: 'league', label: 'Liga', options: config.leagues.filter((l) => teams.some((t) => t.league === l)).map((l) => ({ value: l, label: l })) }] : []),
           { key: 'site', label: 'Heimplatz', options: data.sites.map((x) => ({ value: x.id, label: x.short_name, color: siteColor(x.id) })) },
         ]} />
       {!teams.length && <Empty>Noch keine Mannschaften angelegt.</Empty>}
@@ -46,6 +48,7 @@ export default function TeamsPage() {
                     <Avatar person={main?.person} size={44} />
                     <div className="grow">
                       <div className="list-title">{t.name} {t.club && <span className={`badge ${clubLabel(t.club) === 'SG' ? 'badge-sg' : ''}`}>{clubLabel(t.club)}</span>}</div>
+                      {t.league && <div className="small">{t.league}</div>}
                       <div className="muted small">{main ? `${main.role}: ${main.person.name}${contacts.length > 1 ? ` +${contacts.length - 1}` : ''}` : 'Kein Ansprechpartner'}</div>
                       <div className="muted small"><i className="dot dot-sm" style={{ '--c': siteColor(fieldById[t.home_field_id]?.site_id) }} /> {t.home_field_id ? fieldLabel(t.home_field_id) : '–'}</div>
                     </div>

@@ -16,7 +16,7 @@ export default function TeamsTab({ people }) {
           <li key={t.id} className={`list-item ${t.active ? '' : 'dim'}`}>
             <div className="grow">
               <div className="list-title">{t.name}{!t.active && ' (inaktiv)'}</div>
-              <div className="muted small">{t.category || '–'} · {t.home_field_id ? fieldLabel(t.home_field_id) : 'kein Heimplatz'} · {contactsForTeam(t.id).map((c) => c.person.name).join(', ') || 'keine Ansprechpartner'}</div>
+              <div className="muted small">{t.category || '–'}{t.league ? ` · ${t.league}` : ''} · {t.home_field_id ? fieldLabel(t.home_field_id) : 'kein Heimplatz'} · {contactsForTeam(t.id).map((c) => c.person.name).join(', ') || 'keine Ansprechpartner'}</div>
             </div>
             <button className="icon-btn" onClick={() => setEdit(t)} aria-label="Bearbeiten"><Icon name="edit" /></button>
           </li>
@@ -31,7 +31,7 @@ function TeamForm({ team, people, onClose }) {
   const { data, reloadData, toast, contactsForTeam, fieldLabel } = useApp();
   const isNew = !team.id;
   const [f, setF] = useState({
-    name: team.name || '', short_name: team.short_name || '', category: team.category || 'Junioren', club: team.club || config.title,
+    name: team.name || '', short_name: team.short_name || '', category: team.category || 'Junioren', league: team.league || '', club: team.club || config.title,
     home_field_id: team.home_field_id || data.fields[0]?.id || '', active: team.active ?? true,
     sort: team.sort ?? data.teams.length + 1, fussballde_widget_id: team.fussballde_widget_id || '', ical_url: team.ical_url || '',
   });
@@ -43,7 +43,7 @@ function TeamForm({ team, people, onClose }) {
   async function save() {
     if (!f.name.trim()) return setError('Bitte einen Namen eingeben.');
     const row = { ...f, name: f.name.trim(), short_name: f.short_name.trim() || f.name.trim().slice(0, 8), sort: Number(f.sort) || 0,
-      home_field_id: f.home_field_id || null, fussballde_widget_id: f.fussballde_widget_id.trim() || null, ical_url: f.ical_url.trim() || null };
+      home_field_id: f.home_field_id || null, league: f.league || null, fussballde_widget_id: f.fussballde_widget_id.trim() || null, ical_url: f.ical_url.trim() || null };
     try {
       if (isNew) await api.insert('teams', row); else await api.update('teams', team.id, row);
       await reloadData(); toast('Gespeichert'); onClose();
@@ -69,7 +69,13 @@ function TeamForm({ team, people, onClose }) {
         <Field label="Kurzname (für den Kalender)" hint="max. ca. 7 Zeichen"><input value={f.short_name} onChange={set('short_name')} maxLength={12} /></Field>
         <Field label="Bereich">
           <select value={f.category} onChange={set('category')}>
-            {['Senioren', 'Frauen', 'Junioren', 'Juniorinnen', 'Weitere'].map((c) => <option key={c}>{c}</option>)}
+            {[...config.teamCategories, ...(f.category && !config.teamCategories.includes(f.category) ? [f.category] : [])].map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </Field>
+        <Field label="Liga">
+          <select id="team-league" value={f.league} onChange={set('league')}>
+            <option value="">– keine Angabe –</option>
+            {[...config.leagues, ...(f.league && !config.leagues.includes(f.league) ? [f.league] : [])].map((l) => <option key={l}>{l}</option>)}
           </select>
         </Field>
         <Field label="Verein" hint="SG = gemeinsame Mannschaft, erscheint im Filter bei beiden Vereinen.">
