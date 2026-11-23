@@ -7,8 +7,8 @@ export const config = {
   clubs: ['SC Concordia Scharmede', 'VfL Thüle'],
 
   // Logos: Dateien in den Ordner public/logos legen und hier den Dateinamen eintragen.
-  logoLeft: '/logos/scharmede.svg',
-  logoRight: '/logos/thuele.svg',
+  logoLeft: '/logos/scharmede.jpg',
+  logoRight: '/logos/thuele.png',
 
   // Vereine für Filter: Mannschaften/Ansprechpartner der SG erscheinen bei beiden Vereinen
   clubFilter: [

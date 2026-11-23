@@ -30,7 +30,7 @@ const logo = (letter) => 'data:image/svg+xml;base64,' + Buffer.from(
 ).toString('base64');
 
 const replacements = [
-  ['/logos/scharmede.svg', logo('A')], ['/logos/thuele.svg', logo('B')],
+  ['/logos/scharmede.jpg', logo('A')], ['/logos/thuele.png', logo('B')],
   ['SC Concordia Scharmede', 'Verein A (Demo)'], ['VfL Thüle', 'Verein B (Demo)'],
   ['SG Scharmede/Thüle', 'SG Demo'],
 ];

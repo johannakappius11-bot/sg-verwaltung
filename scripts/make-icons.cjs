@@ -1,15 +1,16 @@
-// Erzeugt die App-Icons (PNG) aus einer SVG-Vorlage. Aufruf: node scripts/make-icons.cjs
-// Eigenes Icon? public/icons/icon.svg ersetzen und Skript erneut ausführen.
+// Erzeugt die App-Icons (PNG) aus dem SG-Logo. Aufruf: node scripts/make-icons.cjs
+// Für schärfere Icons: public/logos/sg.png durch eine größere Datei (mind. 512 x 512) ersetzen.
 const { chromium } = require('playwright');
 const fs = require('fs'); const path = require('path');
-const svg = fs.readFileSync(path.join(__dirname, '../public/icons/icon.svg'), 'utf8');
+const logo = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/logos/sg.png')).toString('base64');
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage();
-  const out = [['icon-512.png', 512, 0], ['icon-192.png', 192, 0], ['apple-touch-icon.png', 180, 0], ['icon-maskable-512.png', 512, 0.12]];
+  const out = [['icon-512.png', 512, 0.06], ['icon-192.png', 192, 0.06], ['apple-touch-icon.png', 180, 0.08], ['icon-maskable-512.png', 512, 0.16]];
   for (const [name, size, pad] of out) {
     await p.setViewportSize({ width: size, height: size });
-    await p.setContent(`<html><body style="margin:0;background:#4a4a4a"><div style="padding:${size * pad}px;width:${size}px;height:${size}px;box-sizing:border-box">${svg.replace('<svg', '<svg width="100%" height="100%"')}</div></body></html>`);
-    await p.screenshot({ path: path.join(__dirname, '../public/icons/', name), omitBackground: false });
+    await p.setContent(`<html><body style="margin:0;background:#fff;display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px"><img src="${logo}" style="width:${Math.round(size * (1 - 2 * pad))}px;height:auto;image-rendering:auto"></body></html>`);
+    await p.waitForTimeout(100);
+    await p.screenshot({ path: path.join(__dirname, '../public/icons/', name) });
   }
   await b.close(); console.log('Icons erzeugt');
 })();
