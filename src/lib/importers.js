@@ -14,7 +14,10 @@ function icalDate(value, params = '') {
   const date = z ? new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s)) : new Date(+y, +mo - 1, +d, +h, +mi, +s);
   return { date, allDay: false };
 }
-const unescape = (s) => s.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1');
+// Falsch kodierte Umlaute aus Fremddaten reparieren ("BÃ¼ren" -> "Büren")
+const MOJIBAKE = [['Ã¼', 'ü'], ['Ã¶', 'ö'], ['Ã¤', 'ä'], ['ÃŸ', 'ß'], ['Ãœ', 'Ü'], ['Ã–', 'Ö'], ['Ã„', 'Ä'], ['Ã©', 'é']];
+export const fixEnc = (s) => (s.includes('Ã') ? MOJIBAKE.reduce((t, [a, b]) => t.split(a).join(b), s) : s);
+const unescape = (s) => fixEnc(s.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1'));
 
 export function parseIcal(text) {
   const lines = text.replace(/\r\n/g, '\n').replace(/\n[ \t]/g, '').split('\n');

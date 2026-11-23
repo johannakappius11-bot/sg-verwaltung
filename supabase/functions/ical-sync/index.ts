@@ -30,7 +30,10 @@ function icalDate(value: string, params: string) {
   const [, y, mo, d, h, mi, s = '0', z] = m;
   return { date: z ? new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s)) : berlinToUtc(+y, +mo, +d, +h, +mi, +s), allDay: false };
 }
-const unesc = (s: string) => s.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1');
+// Falsch kodierte Umlaute aus Fremddaten reparieren ("BÃ¼ren" -> "Büren")
+const MOJIBAKE: [string, string][] = [['Ã¼', 'ü'], ['Ã¶', 'ö'], ['Ã¤', 'ä'], ['ÃŸ', 'ß'], ['Ãœ', 'Ü'], ['Ã–', 'Ö'], ['Ã„', 'Ä'], ['Ã©', 'é']];
+const fixEnc = (s: string) => (s.includes('Ã') ? MOJIBAKE.reduce((t, [a, b]) => t.split(a).join(b), s) : s);
+const unesc = (s: string) => fixEnc(s.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1'));
 
 function parseIcal(text: string): Ev[] {
   const lines = text.replace(/\r\n/g, '\n').replace(/\n[ \t]/g, '').split('\n');
