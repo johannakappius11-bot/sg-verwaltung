@@ -255,23 +255,13 @@ Danach unter **Verwalten → Plätze** die Sportanlagen (Scharmede, Thüle) mit 
 - Bei der CSV-Datei erkennt die App ein Spiel als „neu", wenn sich Datum/Uhrzeit ändern (alter Eintrag muss dann gelöscht werden). Beim iCal-Abo passiert das automatisch.
 - Heim/Auswärts wird an den Vereinsnamen erkannt (`homeKeywords` in `src/config.js`). Unsichere Fälle werden in der Vorschau markiert.
 
-### Kalender-Abo automatisch abgleichen (optional, für Fortgeschrittene)
+### Kalender-Abo automatisch abgleichen
 
-1. Supabase → **Edge Functions → Deploy a new function → Via Editor**, Name `ical-sync`, Inhalt von
-   [`supabase/functions/ical-sync/index.ts`](supabase/functions/ical-sync/index.ts) einfügen → Deploy.
-   In den Einstellungen der Funktion **„Verify JWT" ausschalten** (die Funktion prüft selbst, ob ein Admin aufruft).
-2. **Edge Functions → Secrets**: `CRON_SECRET` = ein langes Zufallswort (z. B. aus einem Passwort-Generator).
-3. Ab jetzt funktioniert in der App „Verwalten → Spiele & Import → Jetzt abgleichen".
-4. Für den nächtlichen Abgleich: **Database → Extensions** → `pg_cron` und `pg_net` aktivieren, dann im SQL Editor
-   (PROJEKT und GEHEIMNIS ersetzen):
-   ```sql
-   select cron.schedule('ical-sync-nachts', '15 3 * * *', $$
-     select net.http_post(
-       url := 'https://PROJEKT.supabase.co/functions/v1/ical-sync',
-       headers := jsonb_build_object('Content-Type','application/json','x-cron-secret','GEHEIMNIS'),
-       body := '{}'::jsonb);
-   $$);
-   ```
+**Bei euch eingerichtet (23.11.2026):** Die Server-Funktion `ical-sync` gleicht alle Kalender-Abos **täglich zweimal** ab (ca. 4:17 und 13:17 Uhr, im Sommer eine Stunde später) und zusätzlich, wenn ein Admin auf „Jetzt abgleichen“ tippt. Das Passwort für den zeitgesteuerten Aufruf liegt im verschlüsselten Tresor (Vault) der Datenbank.
+
+- Kontrolle, ob der Abgleich läuft: Supabase → **SQL Editor** → `select created, status_code, content from net._http_response order by id desc limit 5;`
+- Zeitplan ansehen oder ändern: Supabase → **Integrations → Cron** (Eintrag `platzplan-ical-sync`).
+- Neu einrichten (z. B. in einem neuen Projekt): Funktion [`supabase/functions/ical-sync/index.ts`](supabase/functions/ical-sync/index.ts) als Edge Function `ical-sync` anlegen („Verify JWT“ aus), dann [`supabase/cron.sql`](supabase/cron.sql) mit eurer Projekt-ID und einem eigenen Zufallspasswort ausführen.
 
 ---
 

@@ -83,6 +83,12 @@ Deno.serve(async (req) => {
   // Berechtigung: Cron-Geheimnis ODER angemeldeter Admin
   const cronSecret = Deno.env.get('CRON_SECRET');
   let allowed = !!cronSecret && req.headers.get('x-cron-secret') === cronSecret;
+  // Zeitplan: Passwort liegt im verschlüsselten Tresor der Datenbank (siehe README)
+  const headerSecret = req.headers.get('x-cron-secret');
+  if (!allowed && headerSecret) {
+    const { data: ok } = await service.rpc('cron_secret_ok', { p: headerSecret });
+    allowed = ok === true;
+  }
   if (!allowed) {
     const jwt = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
     const { data } = await service.auth.getUser(jwt);

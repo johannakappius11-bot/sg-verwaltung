@@ -141,7 +141,7 @@ export default function GamesTab() {
       {isAdmin && (
         <>
           <h2>Kalender-Abos (automatisch)</h2>
-          <p className="small">Die iCal-Adresse wird bei der Mannschaft hinterlegt (Verwaltung → Mannschaften). Der Server gleicht die Abos {isDemo ? '' : 'automatisch (z. B. nachts) und '}auf Knopfdruck ab.</p>
+          <p className="small">Die iCal-Adresse wird bei der Mannschaft hinterlegt (Verwaltung → Mannschaften). Der Server gleicht die Abos {isDemo ? '' : 'automatisch zweimal täglich (ca. 4 und 13 Uhr) und '}auf Knopfdruck ab.</p>
           <ul className="plain small">
             {data.teams.filter((t) => t.ical_url).map((t) => <li key={t.id}>{t.name}</li>)}
             {!data.teams.some((t) => t.ical_url) && <li className="muted">Noch keine Mannschaft mit Kalender-Abo.</li>}
