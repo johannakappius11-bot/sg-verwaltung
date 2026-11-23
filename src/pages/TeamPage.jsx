@@ -7,7 +7,7 @@ import { Empty, Icon, Link, PersonCard } from '../components/ui.jsx';
 import FussballDeWidget from '../components/FussballDeWidget.jsx';
 
 export default function TeamPage({ params }) {
-  const { teamById, contactsForTeam, fieldById, data } = useApp();
+  const { teamById, contactsForTeam, fieldLabel, data } = useApp();
   const team = teamById[params.id];
   const [events, setEvents] = useState([]);
   const from = useMemo(() => startOfDay(new Date()), []);
@@ -30,7 +30,7 @@ export default function TeamPage({ params }) {
     <div className="page">
       <Link to="/mannschaften" className="back"><Icon name="left" size={18} /> Alle Mannschaften</Link>
       <h1>{team.name}</h1>
-      <p className="muted">Heimplatz: {fieldById[team.home_field_id]?.name || '–'}</p>
+      <p className="muted">Heimplatz: {team.home_field_id ? fieldLabel(team.home_field_id, { long: true }) : '–'}</p>
 
       <h2>Ansprechpartner</h2>
       {contactsForTeam(team.id).map((c) => <PersonCard key={c.id} person={c.person} subtitle={c.role} />)}
@@ -40,7 +40,7 @@ export default function TeamPage({ params }) {
       {trainings.length ? (
         <ul className="plain">
           {trainings.sort((a, b) => a.weekday - b.weekday).map((s) => (
-            <li key={s.id}><strong>{WD[s.weekday]}</strong> {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)} Uhr · {fieldById[s.field_id]?.short_name}</li>
+            <li key={s.id}><strong>{WD[s.weekday]}</strong> {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)} Uhr · {fieldLabel(s.field_id)}</li>
           ))}
         </ul>
       ) : <Empty>Keine regelmäßigen Trainingszeiten.</Empty>}
@@ -51,7 +51,7 @@ export default function TeamPage({ params }) {
           {games.map((g) => (
             <li key={g.key}>
               <strong>{fmtDate(g.start)} {hm(g.start)}</strong> · {g.isAway ? 'Auswärts bei ' : 'Heim gegen '}{g.opponent || '?'}
-              {g.isAway && g.venue ? <div className="muted small">{g.venue}</div> : !g.isAway && <div className="muted small">{fieldById[g.fieldId]?.name}</div>}
+              {g.isAway && g.venue ? <div className="muted small">{g.venue}</div> : !g.isAway && <div className="muted small">{fieldLabel(g.fieldId, { long: true })}</div>}
             </li>
           ))}
         </ul>
@@ -60,7 +60,7 @@ export default function TeamPage({ params }) {
       {nextOther.length > 0 && <>
         <h2>Nächste Termine</h2>
         <ul className="plain">
-          {nextOther.map((o) => <li key={o.key} className={o.cancelled ? 'strike' : ''}>{fmtDate(o.start)} {hm(o.start)}–{hm(o.end)} · {o.title || KIND_LABEL[o.kind]} · {fieldById[o.fieldId]?.short_name}{o.cancelled ? ' (fällt aus)' : ''}</li>)}
+          {nextOther.map((o) => <li key={o.key} className={o.cancelled ? 'strike' : ''}>{fmtDate(o.start)} {hm(o.start)}–{hm(o.end)} · {o.title || KIND_LABEL[o.kind]} · {fieldLabel(o.fieldId)}{o.cancelled ? ' (fällt aus)' : ''}</li>)}
         </ul>
       </>}
 

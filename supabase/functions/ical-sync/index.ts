@@ -84,7 +84,9 @@ Deno.serve(async (req) => {
 
   const { data: teams, error } = await service.from('teams').select('id,name,home_field_id,ical_url').not('ical_url', 'is', null);
   if (error) return json({ message: error.message }, 500);
-  const { data: fields } = await service.from('fields').select('id,short_name');
+  // Platz anhand des Ortsnamens erkennen (Kurzname der Sportanlage, z. B. "Thüle")
+  const { data: fieldRows } = await service.from('fields').select('id, sort, site:sites(short_name)').order('sort');
+  const fields = (fieldRows || []).map((f: any) => ({ id: f.id, short_name: f.site?.short_name || '' })).filter((f) => f.short_name);
 
   const report: string[] = [];
   const now = new Date();

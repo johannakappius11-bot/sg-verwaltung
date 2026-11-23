@@ -356,3 +356,13 @@ a.list-item:active, li.list-item[onclick]:active { background: var(--surface-2);
 .dialog-msg { margin: 0 0 12px; white-space: pre-line; }
 .stack-s { display: grid; gap: 8px; }
 .btn-danger-solid { background: var(--error); color: #fff; border-color: var(--error); }
+
+/* Platz-Kürzel im Kalenderblock (bei Anlagen mit mehreren Plätzen) */
+.block-res { align-self: flex-start; font-size: .58rem; font-weight: 800; line-height: 1; padding: 1px 3px; margin-top: 1px; border-radius: 3px; background: var(--c); color: #fff; }
+.block.kind-spiel .block-res { background: #fff; color: var(--c); }
+.sub-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding-left: 4px; }
+.chip.chip-sm { min-height: 36px; padding: 4px 12px; font-size: .85rem; }
+.seg .dot { width: 10px; height: 10px; }
+.site-card { display: grid; gap: 10px; }
+.list.list-inner { margin: 0; }
+.list-inner .list-item { min-height: 52px; }

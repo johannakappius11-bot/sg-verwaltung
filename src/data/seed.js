@@ -3,23 +3,30 @@
 // Termine sind relativ zur aktuellen Woche (week: 0 = diese Woche).
 
 export const seed = {
+  // Sportanlagen (Orte) mit Farbe im Plan
+  sites: [
+    { key: 'S', name: 'Sportanlage Scharmede', short_name: 'Scharmede', address: 'Am Sportplatz, 33154 Salzkotten-Scharmede (Platzhalter)', color: '#2e7d32', sort: 1 },
+    { key: 'T', name: 'Sportanlage Thüle', short_name: 'Thüle', address: 'Sportplatzweg, 33154 Salzkotten-Thüle (Platzhalter)', color: '#c62828', sort: 2 },
+  ],
+  // Plätze je Anlage (Scharmede: 1 Platz, Thüle: 2 Plätze)
   fields: [
-    { key: 'S', name: 'Sportplatz Scharmede', short_name: 'Scharmede', address: 'Am Sportplatz, 33154 Salzkotten-Scharmede (Platzhalter)', color: '#2e7d32', sort: 1 },
-    { key: 'T', name: 'Sportplatz Thüle', short_name: 'Thüle', address: 'Sportplatzweg, 33154 Salzkotten-Thüle (Platzhalter)', color: '#c62828', sort: 2 },
+    { key: 'S1', site: 'S', name: 'Fußballplatz', short_name: 'Platz', sort: 1 },
+    { key: 'T1', site: 'T', name: 'Platz 1', short_name: 'P1', sort: 2 },
+    { key: 'T2', site: 'T', name: 'Platz 2', short_name: 'P2', sort: 3 },
   ],
   teams: [
-    { key: 'H1', name: '1. Herren', short_name: '1. H', category: 'Senioren', home: 'S' },
-    { key: 'H2', name: '2. Herren', short_name: '2. H', category: 'Senioren', home: 'T' },
-    { key: 'AH', name: 'Alte Herren', short_name: 'AH', category: 'Senioren', home: 'T' },
-    { key: 'FR', name: 'Frauen', short_name: 'Frauen', category: 'Frauen', home: 'S' },
-    { key: 'A', name: 'A-Jugend (U19)', short_name: 'A-Jgd', category: 'Junioren', home: 'S' },
-    { key: 'B', name: 'B-Jugend (U17)', short_name: 'B-Jgd', category: 'Junioren', home: 'T' },
-    { key: 'C', name: 'C-Jugend (U15)', short_name: 'C-Jgd', category: 'Junioren', home: 'S' },
-    { key: 'D', name: 'D-Jugend (U13)', short_name: 'D-Jgd', category: 'Junioren', home: 'T' },
-    { key: 'E1', name: 'E1-Jugend (U11)', short_name: 'E1', category: 'Junioren', home: 'T' },
-    { key: 'E2', name: 'E2-Jugend (U11)', short_name: 'E2', category: 'Junioren', home: 'S' },
-    { key: 'F', name: 'F-Jugend (U9)', short_name: 'F-Jgd', category: 'Junioren', home: 'S' },
-    { key: 'BAM', name: 'Bambini (U7)', short_name: 'Bambini', category: 'Junioren', home: 'T' },
+    { key: 'H1', name: '1. Herren', short_name: '1. H', category: 'Senioren', home: 'S1' },
+    { key: 'H2', name: '2. Herren', short_name: '2. H', category: 'Senioren', home: 'T1' },
+    { key: 'AH', name: 'Alte Herren', short_name: 'AH', category: 'Senioren', home: 'T1' },
+    { key: 'FR', name: 'Frauen', short_name: 'Frauen', category: 'Frauen', home: 'S1' },
+    { key: 'A', name: 'A-Jugend (U19)', short_name: 'A-Jgd', category: 'Junioren', home: 'S1' },
+    { key: 'B', name: 'B-Jugend (U17)', short_name: 'B-Jgd', category: 'Junioren', home: 'T1' },
+    { key: 'C', name: 'C-Jugend (U15)', short_name: 'C-Jgd', category: 'Junioren', home: 'S1' },
+    { key: 'D', name: 'D-Jugend (U13)', short_name: 'D-Jgd', category: 'Junioren', home: 'T2' },
+    { key: 'E1', name: 'E1-Jugend (U11)', short_name: 'E1', category: 'Junioren', home: 'T2' },
+    { key: 'E2', name: 'E2-Jugend (U11)', short_name: 'E2', category: 'Junioren', home: 'S1' },
+    { key: 'F', name: 'F-Jugend (U9)', short_name: 'F-Jgd', category: 'Junioren', home: 'S1' },
+    { key: 'BAM', name: 'Bambini (U7)', short_name: 'Bambini', category: 'Junioren', home: 'T2' },
   ],
   people: [
     { key: 'p1', name: 'Markus Beispiel', phone: '0170 1234501', email: 'markus@example.org', consent: true },
@@ -64,18 +71,18 @@ export const seed = {
   ],
   // [team, field, weekday (1=Mo … 7=So), start, end]
   series: [
-    ['H1', 'S', 2, '19:00', '20:30'], ['H1', 'S', 4, '19:00', '20:30'],
-    ['H2', 'T', 2, '19:00', '20:30'], ['H2', 'T', 4, '19:30', '21:00'],
-    ['AH', 'T', 5, '19:00', '20:30'],
-    ['FR', 'S', 1, '18:30', '20:00'], ['FR', 'S', 3, '19:00', '20:30'],
-    ['A', 'S', 1, '17:00', '18:30'], ['A', 'S', 3, '17:30', '19:00'],
-    ['B', 'T', 1, '17:30', '19:00'], ['B', 'T', 3, '18:00', '19:30'],
-    ['C', 'S', 2, '17:30', '19:00'], ['C', 'S', 4, '17:30', '19:00'],
-    ['D', 'T', 3, '16:30', '18:00'], ['D', 'T', 5, '17:00', '18:30'],
-    ['E1', 'T', 3, '17:00', '18:15'],              // überschneidet sich mit D-Jugend (Demo für Warnung)
-    ['E2', 'S', 2, '16:30', '17:30'],
-    ['F', 'S', 4, '16:30', '17:30'],
-    ['BAM', 'T', 5, '15:30', '16:30'],
+    ['H1', 'S1', 2, '19:00', '20:30'], ['H1', 'S1', 4, '19:00', '20:30'],
+    ['H2', 'T1', 2, '19:00', '20:30'], ['H2', 'T1', 4, '19:30', '21:00'],
+    ['AH', 'T1', 5, '19:00', '20:30'],
+    ['FR', 'S1', 1, '18:30', '20:00'], ['FR', 'S1', 3, '19:00', '20:30'],
+    ['A', 'S1', 1, '17:00', '18:30'], ['A', 'S1', 3, '17:30', '19:00'],
+    ['B', 'T1', 1, '17:30', '19:00'], ['B', 'T1', 3, '18:00', '19:30'],
+    ['C', 'S1', 2, '17:30', '19:00'], ['C', 'S1', 4, '17:30', '19:00'],
+    ['D', 'T2', 3, '16:30', '18:00'], ['D', 'T2', 5, '17:00', '18:30'],
+    ['E1', 'T2', 3, '17:00', '18:15'],              // überschneidet sich mit D-Jugend (Demo für Warnung)
+    ['E2', 'S1', 2, '16:30', '17:30'],
+    ['F', 'S1', 4, '16:30', '17:30'],
+    ['BAM', 'T2', 5, '15:30', '16:30'],
   ],
   // Spiele: week relativ zur aktuellen Woche, weekday 1=Mo … 7=So
   games: [
@@ -96,7 +103,7 @@ export const seed = {
   ],
   // Sonstige Termine
   others: [
-    { team: 'F', field: 'T', week: 1, weekday: 6, time: '10:00', dur: 240, title: 'Spielfest F-Jugend', note: 'Mit 6 Mannschaften, Platz komplett belegt' },
+    { team: 'F', field: 'T2', week: 1, weekday: 6, time: '10:00', dur: 240, title: 'Spielfest F-Jugend', note: 'Mit 6 Mannschaften, Platz komplett belegt' },
   ],
   // Demo-Nutzer (nur Demo-Modus): Rolle + verknüpfte Person
   demoUsers: [

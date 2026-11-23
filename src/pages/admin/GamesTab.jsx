@@ -9,7 +9,7 @@ import { ErrorBox, Field, Icon } from '../../components/ui.jsx';
 import EventForm from '../../components/EventForm.jsx';
 
 export default function GamesTab() {
-  const { data, editableTeams, teamById, fieldById, isAdmin, toast } = useApp();
+  const { data, editableTeams, teamById, fieldById, isAdmin, toast, fieldLabel, siteById } = useApp();
   const [form, setForm] = useState(null);
   const [teamId, setTeamId] = useState(editableTeams[0]?.id || '');
   const [preview, setPreview] = useState(null); // { rows, errors }
@@ -28,7 +28,7 @@ export default function GamesTab() {
       if (/BEGIN:VCALENDAR/.test(text)) {
         if (!team) return setError('Bitte zuerst die Mannschaft wählen, zu der der Kalender gehört.');
         const from = startOfDay(addDays(new Date(), -1));
-        rows = parseIcal(text).filter((ev) => ev.start >= from).map((ev) => icalToGame(ev, team, data.fields));
+        rows = parseIcal(text).filter((ev) => ev.start >= from).map((ev) => icalToGame(ev, team, data.fields.map((f) => ({ id: f.id, short_name: siteById[f.site_id]?.short_name || f.short_name }))));
       } else {
         parseCsv(text).forEach((r, i) => {
           const g = csvToGame(r, editableTeams, team);
@@ -122,10 +122,10 @@ export default function GamesTab() {
                   <div className="seg seg-sm">
                     <button className={!r.is_away ? 'on' : ''} onClick={() => update(i, { is_away: false, field_id: r.field_id || teamById[r.team_id]?.home_field_id })}>Heim</button>
                     <button className={r.is_away ? 'on' : ''} onClick={() => update(i, { is_away: true, field_id: null })}>Auswärts</button>
-                    {!r.is_away && data.fields.map((f) => <button key={f.id} className={r.field_id === f.id ? 'on' : ''} onClick={() => update(i, { field_id: f.id })}>{f.short_name}</button>)}
+                    {!r.is_away && data.fields.map((f) => <button key={f.id} className={r.field_id === f.id ? 'on' : ''} onClick={() => update(i, { field_id: f.id })}>{fieldLabel(f.id)}</button>)}
                   </div>
                   {r._unsure && <div className="warn-text small">Heim/Auswärts unsicher erkannt – bitte prüfen.</div>}
-                  {r._conflict && !r.is_away && <div className="warn-text small"><Icon name="warn" size={14} /> Doppelbelegung mit {r._conflict} ({fieldById[r.field_id]?.short_name})</div>}
+                  {r._conflict && !r.is_away && <div className="warn-text small"><Icon name="warn" size={14} /> Doppelbelegung mit {r._conflict} ({fieldLabel(r.field_id)})</div>}
                 </div>
               </li>
             ))}

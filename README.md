@@ -2,7 +2,7 @@
 
 Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert oder spielt wann auf welchem Platz – und wen kann man ansprechen?
 
-- 📅 **Gemeinsamer Wochenplan** für beide Plätze, farbig nach Ort (Scharmede grün, Thüle rot, auswärts grau), Wochen- und Tagesansicht, Wischen zum Blättern
+- 📅 **Gemeinsamer Wochenplan** für beide Sportanlagen (Thüle mit zwei Plätzen), farbig nach Ort (Scharmede grün, Thüle rot, auswärts grau), Wochen- und Tagesansicht, Wischen zum Blättern
 - 🔎 **Filter** nach Ort, Art (Training/Spiel/Sonstiges) und Mannschaft. Training = helle Fläche mit Farbstreifen, Spiel = kräftig ausgefüllt mit Ball-Symbol
 - ⚽ **Spiele**: Heimspiele belegen den Platz, Auswärtsspiele stehen als „Auswärts" mit Gegner und Spielort im Plan
 - 👥 **Mannschaften** mit Trainern/Betreuern, **Vorstand** mit Zuständigkeiten
@@ -78,7 +78,8 @@ Handy (Browser/App)  ──►  App-Dateien (Cloudflare Pages oder Vereins-Websp
 
 | Tabelle | Inhalt |
 |---|---|
-| `fields` | Plätze (Scharmede, Thüle) mit Farbe für den Plan |
+| `sites` | Sportanlagen (Scharmede, Thüle) mit Adresse und Farbe im Plan |
+| `fields` | Plätze je Sportanlage (Scharmede: 1 Platz, Thüle: Platz 1 und Platz 2). Doppelbelegung wird pro Platz geprüft |
 | `teams` | Mannschaften mit Heimplatz, optional fussball.de-Widget-ID und Kalender-Abo |
 | `people` | Personen (Trainer, Betreuer, Vorstand) – mit oder ohne App-Konto; Telefon/Foto/E-Mail + Einwilligung |
 | `team_contacts` | Wer ist Ansprechpartner welcher Mannschaft (Trainer, Co-Trainer, Betreuer) |
@@ -203,16 +204,16 @@ Wenn ihr mit echten Daten startet: SQL Editor →
 
 ```sql
 delete from events; delete from series; delete from board_members; delete from team_contacts;
-delete from teams; delete from people where user_id is null; delete from fields;
+delete from teams; delete from people where user_id is null; delete from fields; delete from sites;
 ```
 
-Danach unter **Verwalten → Plätze** die zwei Plätze und unter **Mannschaften** eure Teams anlegen.
+Danach unter **Verwalten → Plätze** die Sportanlagen (Scharmede, Thüle) mit ihren Plätzen und unter **Mannschaften** eure Teams anlegen.
 
 ---
 
 ## 4. Bedienung für Admins
 
-**Reihenfolge beim Start:** Plätze → Personen (Trainer, Vorstand) → Mannschaften (mit Ansprechpartnern) → Vorstand → Trainingszeiten → Einladungslinks verteilen.
+**Reihenfolge beim Start:** Sportanlagen & Plätze → Personen (Trainer, Vorstand) → Mannschaften (mit Ansprechpartnern) → Vorstand → Trainingszeiten → Einladungslinks verteilen.
 
 | Aufgabe | Wo |
 |---|---|

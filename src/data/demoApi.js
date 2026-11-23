@@ -4,7 +4,7 @@
 import { seed } from './seed.js';
 import { addDays, startOfWeek, combine, ymd } from '../lib/dates.js';
 
-const STORE_KEY = 'platzplan-demo-v2';
+const STORE_KEY = 'platzplan-demo-v3';
 const USER_KEY = 'platzplan-demo-user';
 let counter = 0;
 const newId = () => `d${Date.now().toString(36)}${(counter++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -17,7 +17,8 @@ function buildDb() {
     return new Date(d.getTime() + addMin * 60000).toISOString();
   };
   const db = {
-    fields: seed.fields.map((f) => ({ id: id('f' + f.key), name: f.name, short_name: f.short_name, address: f.address, color: f.color, sort: f.sort })),
+    sites: seed.sites.map((x) => ({ id: id('site' + x.key), name: x.name, short_name: x.short_name, address: x.address, color: x.color, sort: x.sort })),
+    fields: seed.fields.map((f) => ({ id: id('f' + f.key), site_id: id('site' + f.site), name: f.name, short_name: f.short_name, sort: f.sort })),
     people: seed.people.map((p) => ({ id: id(p.key), user_id: null, name: p.name, phone: p.phone, email: p.email, photo_path: null, consent: p.consent, consent_at: p.consent ? new Date().toISOString() : null })),
     teams: seed.teams.map((t, i) => ({ id: id('t' + t.key), name: t.name, short_name: t.short_name, category: t.category, home_field_id: id('f' + t.home), fussballde_widget_id: null, ical_url: null, active: true, sort: i + 1 })),
     team_contacts: seed.contacts.map(([t, p, role, prim], i) => ({ id: id('tc' + i), team_id: id('t' + t), person_id: id(p), role, is_primary: prim, sort: i })),
@@ -140,6 +141,8 @@ export function createDemoApi() {
       if (row && !canWrite(table, row)) deny();
       db[table] = db[table].filter((r) => r.id !== id);
       if (table === 'teams') { db.team_contacts = db.team_contacts.filter((x) => x.team_id !== id); db.series = db.series.filter((x) => x.team_id !== id); db.events = db.events.filter((x) => x.team_id !== id); }
+      if (table === 'sites') { const fids = db.fields.filter((x) => x.site_id === id).map((x) => x.id); db.fields = db.fields.filter((x) => x.site_id !== id); db.series = db.series.filter((x) => !fids.includes(x.field_id)); }
+      if (table === 'fields') db.series = db.series.filter((x) => x.field_id !== id);
       if (table === 'people') { db.team_contacts = db.team_contacts.filter((x) => x.person_id !== id); db.board_members = db.board_members.filter((x) => x.person_id !== id); }
       if (table === 'series') db.series_exceptions = db.series_exceptions.filter((x) => x.series_id !== id);
       save(); return delay();

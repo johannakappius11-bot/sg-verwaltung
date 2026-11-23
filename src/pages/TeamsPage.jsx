@@ -2,7 +2,7 @@ import { useApp } from '../store.jsx';
 import { Avatar, Empty, Icon, Link } from '../components/ui.jsx';
 
 export default function TeamsPage() {
-  const { data, contactsForTeam, fieldById } = useApp();
+  const { data, contactsForTeam, fieldLabel } = useApp();
   const teams = data.teams.filter((t) => t.active);
   const groups = [...new Set(teams.map((t) => t.category || 'Weitere'))];
   return (
@@ -21,7 +21,7 @@ export default function TeamsPage() {
                     <Avatar person={main?.person} size={44} />
                     <div className="grow">
                       <div className="list-title">{t.name}</div>
-                      <div className="muted small">{main ? `${main.role}: ${main.person.name}` : 'Kein Ansprechpartner'} · {fieldById[t.home_field_id]?.short_name || '–'}</div>
+                      <div className="muted small">{main ? `${main.role}: ${main.person.name}` : 'Kein Ansprechpartner'} · {t.home_field_id ? fieldLabel(t.home_field_id) : '–'}</div>
                     </div>
                     <Icon name="right" />
                   </Link>

@@ -5,7 +5,7 @@ import { ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
 import { confirmDialog } from '../../components/dialog.jsx';
 
 export default function TeamsTab({ people }) {
-  const { data, fieldById, contactsForTeam } = useApp();
+  const { data, contactsForTeam, fieldLabel } = useApp();
   const [edit, setEdit] = useState(null);
   return (
     <div>
@@ -15,7 +15,7 @@ export default function TeamsTab({ people }) {
           <li key={t.id} className={`list-item ${t.active ? '' : 'dim'}`}>
             <div className="grow">
               <div className="list-title">{t.name}{!t.active && ' (inaktiv)'}</div>
-              <div className="muted small">{t.category || '–'} · {fieldById[t.home_field_id]?.short_name || 'kein Heimplatz'} · {contactsForTeam(t.id).map((c) => c.person.name).join(', ') || 'keine Ansprechpartner'}</div>
+              <div className="muted small">{t.category || '–'} · {t.home_field_id ? fieldLabel(t.home_field_id) : 'kein Heimplatz'} · {contactsForTeam(t.id).map((c) => c.person.name).join(', ') || 'keine Ansprechpartner'}</div>
             </div>
             <button className="icon-btn" onClick={() => setEdit(t)} aria-label="Bearbeiten"><Icon name="edit" /></button>
           </li>
@@ -27,7 +27,7 @@ export default function TeamsTab({ people }) {
 }
 
 function TeamForm({ team, people, onClose }) {
-  const { data, reloadData, toast, contactsForTeam } = useApp();
+  const { data, reloadData, toast, contactsForTeam, fieldLabel } = useApp();
   const isNew = !team.id;
   const [f, setF] = useState({
     name: team.name || '', short_name: team.short_name || '', category: team.category || 'Junioren',
@@ -74,7 +74,7 @@ function TeamForm({ team, people, onClose }) {
         <Field label="Heimplatz">
           <select value={f.home_field_id} onChange={set('home_field_id')}>
             <option value="">–</option>
-            {data.fields.map((fl) => <option key={fl.id} value={fl.id}>{fl.name}</option>)}
+            {data.fields.map((fl) => <option key={fl.id} value={fl.id}>{fieldLabel(fl.id, { long: true })}</option>)}
           </select>
         </Field>
         <Field label="Reihenfolge"><input type="number" inputMode="numeric" value={f.sort} onChange={set('sort')} /></Field>

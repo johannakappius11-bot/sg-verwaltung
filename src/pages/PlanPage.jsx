@@ -18,10 +18,10 @@ const store = {
   get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* */ } },
 };
-const EMPTY_FILTER = { hiddenPlaces: [], kinds: [], teams: [] }; // kinds/teams leer = alle
+// hiddenPlaces: ausgeblendete Sportanlagen (+ 'away'), hiddenFields: einzelne ausgeblendete Plätze
+const EMPTY_FILTER = { hiddenPlaces: [], hiddenFields: [], kinds: [], teams: [] }; // kinds/teams leer = alle
 const loadFilter = () => { try { return { ...EMPTY_FILTER, ...JSON.parse(store.get(FILTER_KEY) || '{}') }; } catch { return EMPTY_FILTER; } };
 
-export const placeOf = (o) => (o.isAway ? 'away' : o.fieldId || 'none');
 
 export function Ball({ size = 11 }) {
   return (
@@ -33,7 +33,8 @@ export function Ball({ size = 11 }) {
 }
 
 export default function PlanPage() {
-  const { data, teamById, canManage, editableTeams, colorOf, me } = useApp();
+  const { data, teamById, fieldById, canManage, editableTeams, siteColor, fieldLabel, me } = useApp();
+  const placeOf = (o) => (o.isAway ? 'away' : fieldById[o.fieldId]?.site_id || 'none');
   const [monday, setMonday] = useState(() => startOfWeek(new Date()));
   const [view, setView] = useState(() => store.get(VIEW_KEY) || 'woche');
   const [day, setDay] = useState(() => isoWeekday(new Date()));
@@ -61,7 +62,7 @@ export default function PlanPage() {
 
   const all = useMemo(() => buildOccurrences({ series: data.series, exceptions: data.exceptions, events, from, to }), [data.series, data.exceptions, events, from, to]);
   const conflicts = useMemo(() => conflictKeys(all), [all]);
-  const shown = all.filter((o) => !filter.hiddenPlaces.includes(placeOf(o))
+  const shown = all.filter((o) => !filter.hiddenPlaces.includes(placeOf(o)) && !filter.hiddenFields.includes(o.fieldId)
     && (!filter.kinds.length || filter.kinds.includes(o.kind))
     && (!filter.teams.length || filter.teams.includes(o.teamId)));
 
@@ -92,10 +93,11 @@ export default function PlanPage() {
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
   };
 
-  const places = [...data.fields.map((f) => ({ key: f.id, label: f.short_name, color: colorOf({ fieldId: f.id }) })), { key: 'away', label: 'Auswärts', color: AWAY_COLOR }];
+  const places = [...data.sites.map((x) => ({ key: x.id, label: x.short_name, color: siteColor(x.id) })), { key: 'away', label: 'Auswärts', color: AWAY_COLOR }];
   const togglePlace = (k) => setFilter((f) => ({ ...f, hiddenPlaces: f.hiddenPlaces.includes(k) ? f.hiddenPlaces.filter((x) => x !== k) : [...f.hiddenPlaces, k] }));
-  const extraCount = (filter.kinds.length ? 1 : 0) + (filter.teams.length ? 1 : 0);
+  const extraCount = (filter.kinds.length ? 1 : 0) + (filter.teams.length ? 1 : 0) + (filter.hiddenFields.length ? 1 : 0);
   const summary = [
+    filter.hiddenFields.length ? `ohne ${filter.hiddenFields.map((id) => fieldLabel(id)).join(', ')}` : null,
     filter.kinds.length ? filter.kinds.map((k) => KIND_LABEL[k]).join(' + ') : null,
     filter.teams.length ? (filter.teams.length === 1 ? teamById[filter.teams[0]]?.name : `${filter.teams.length} Mannschaften`) : null,
   ].filter(Boolean).join(' · ');
@@ -122,7 +124,7 @@ export default function PlanPage() {
         {summary && (
           <div className="filter-summary">
             <span>Gefiltert: <strong>{summary}</strong></span>
-            <button className="link-btn" onClick={() => setFilter((f) => ({ ...f, kinds: [], teams: [] }))}>Aufheben</button>
+            <button className="link-btn" onClick={() => setFilter((f) => ({ ...f, kinds: [], teams: [], hiddenFields: [] }))}>Aufheben</button>
           </div>
         )}
         <div className="week-nav">
@@ -198,7 +200,7 @@ export default function PlanPage() {
 }
 
 function FilterSheet({ filter, setFilter, places, myTeamIds, onClose }) {
-  const { data } = useApp();
+  const { data, fieldsOfSite } = useApp();
   const teams = data.teams.filter((t) => t.active);
   const groups = [...new Set(teams.map((t) => t.category || 'Weitere'))];
   const toggle = (key, v) => setFilter((f) => ({ ...f, [key]: f[key].includes(v) ? f[key].filter((x) => x !== v) : [...f[key], v] }));
@@ -220,6 +222,15 @@ function FilterSheet({ filter, setFilter, places, myTeamIds, onClose }) {
                 onClick={() => toggle('hiddenPlaces', p.key)}><i className="dot" />{p.label}</button>
             ))}
           </div>
+          {data.sites.filter((x) => fieldsOfSite(x.id).length > 1 && placeOn(x.id)).map((x) => (
+            <div key={x.id} className="sub-fields">
+              <span className="muted small">{x.short_name}:</span>
+              {fieldsOfSite(x.id).map((fl) => {
+                const on = !filter.hiddenFields.includes(fl.id);
+                return <button key={fl.id} className={`chip chip-sm ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => toggle('hiddenFields', fl.id)}>{fl.name}</button>;
+              })}
+            </div>
+          ))}
         </div>
         <div>
           <div className="field-label">Art</div>
@@ -258,7 +269,7 @@ function FilterSheet({ filter, setFilter, places, myTeamIds, onClose }) {
 }
 
 function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
-  const { teamById, colorOf, fieldById } = useApp();
+  const { teamById, colorOf, fieldLabel } = useApp();
   const now = new Date();
   const nowTop = sameDay(day, now) ? (now.getHours() - startH) * 60 + now.getMinutes() : null;
   return (
@@ -271,7 +282,8 @@ function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
         const conflict = conflicts.has(o.key);
         const color = colorOf(o);
         const label = o.kind === 'sonstiges' && o.title ? o.title : team?.[wide ? 'name' : 'short_name'] || '–';
-        const where = o.isAway ? 'Auswärts' : fieldById[o.fieldId]?.short_name || '';
+        const where = o.isAway ? 'Auswärts' : fieldLabel(o.fieldId);
+        const code = o.isAway ? '' : fieldLabel(o.fieldId, { short: true });
         const detail = o.cancelled ? 'fällt aus'
           : o.kind === 'spiel' ? (o.isAway ? `Auswärts bei ${o.opponent || '?'}` : `Heimspiel gegen ${o.opponent || '?'} · ${where}`)
             : `${KIND_LABEL[o.kind]} · ${where}`;
@@ -284,6 +296,7 @@ function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
             {conflict && <span className="block-warn" aria-hidden="true">!</span>}
             <span className="block-team">{o.kind === 'spiel' && <Ball />}{label}</span>
             {(wide || lanes < 3) && <span className="block-time">{hm(o.start)}{wide ? `–${hm(o.end)}` : ''}</span>}
+            {code && !wide && <span className="block-res">{code}</span>}
             {wide && <span className="block-kind">{detail}</span>}
           </button>
         );
@@ -293,7 +306,7 @@ function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
 }
 
 function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
-  const { teamById, fieldById, contactsForTeam, canEditTeam, data, reloadData, toast, colorOf } = useApp();
+  const { teamById, fieldLabel, contactsForTeam, canEditTeam, data, reloadData, toast, colorOf } = useApp();
   const team = teamById[o.teamId];
   const contacts = contactsForTeam(o.teamId);
   const canEdit = canEditTeam(o.teamId);
@@ -320,7 +333,7 @@ function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
           {o.competition && <><dt>Wettbewerb</dt><dd>{o.competition}</dd></>}
           {o.isAway
             ? <><dt>Spielort</dt><dd>{o.venue || 'nicht angegeben'}{mapUrl && <><br /><a href={mapUrl} target="_blank" rel="noopener noreferrer"><Icon name="pin" size={16} /> In Karte öffnen</a></>}</dd></>
-            : <><dt>Platz</dt><dd>{fieldById[o.fieldId]?.name || '–'}</dd></>}
+            : <><dt>Platz</dt><dd>{fieldLabel(o.fieldId, { long: true })}</dd></>}
           {series && <><dt>Wiederholung</dt><dd>jede Woche{series.valid_until ? ` bis ${series.valid_until.split('-').reverse().join('.')}` : ''}</dd></>}
           {o.note && <><dt>Notiz</dt><dd>{o.note}</dd></>}
         </dl>

@@ -19,7 +19,7 @@ import { ErrorBox, Field, Icon, Sheet } from './ui.jsx';
 
 // initial: { series } | { event } | { defaults }
 export default function EventForm({ initial = {}, onClose, onSaved }) {
-  const { data, editableTeams, teamById, fieldById, reloadData, toast } = useApp();
+  const { data, editableTeams, teamById, fieldById, reloadData, toast, fieldLabel, colorOf } = useApp();
   const s = initial.series; const ev = initial.event; const d = initial.defaults || {};
   const isNew = !s && !ev;
   const firstTeam = d.team_id || editableTeams[0]?.id || '';
@@ -145,7 +145,7 @@ export default function EventForm({ initial = {}, onClose, onSaved }) {
         ) : (
           <Field label="Platz">
             <div className="seg">
-              {data.fields.map((fl) => <button type="button" key={fl.id} className={f.field_id === fl.id ? 'on' : ''} onClick={() => set('field_id')({ target: { value: fl.id } })}>{fl.short_name}</button>)}
+              {data.fields.map((fl) => <button type="button" key={fl.id} className={f.field_id === fl.id ? 'on' : ''} onClick={() => set('field_id')({ target: { value: fl.id } })}><i className="dot" style={{ '--c': colorOf({ fieldId: fl.id }) }} /> {fieldLabel(fl.id)}</button>)}
             </div>
           </Field>
         )}

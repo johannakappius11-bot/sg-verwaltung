@@ -8,7 +8,7 @@ import EventForm from '../../components/EventForm.jsx';
 import { alertDialog, choiceDialog, confirmDialog } from '../../components/dialog.jsx';
 
 export default function AppointmentsTab() {
-  const { data, editableTeams, fieldById, teamById, reloadData, toast, isAdmin } = useApp();
+  const { data, editableTeams, fieldLabel, teamById, reloadData, toast, isAdmin } = useApp();
   const [teamId, setTeamId] = useState(editableTeams.length === 1 ? editableTeams[0].id : '');
   const [events, setEvents] = useState([]);
   const [form, setForm] = useState(null);
@@ -68,7 +68,7 @@ export default function AppointmentsTab() {
               <li key={s.id} className={`list-item ${ended ? 'dim' : ''}`}>
                 <div className="grow">
                   <div className="list-title">{teamById[s.team_id]?.name} · {KIND_LABEL[s.kind]}</div>
-                  <div className="small">{WEEKDAYS_LONG[s.weekday - 1]} {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)} · {fieldById[s.field_id]?.short_name}</div>
+                  <div className="small">{WEEKDAYS_LONG[s.weekday - 1]} {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)} · {fieldLabel(s.field_id)}</div>
                   <div className="muted small">ab {s.valid_from.split('-').reverse().join('.')}{s.valid_until ? ` bis ${s.valid_until.split('-').reverse().join('.')}` : ''}{ended ? ' (beendet)' : ''}</div>
                 </div>
                 <button className="icon-btn" onClick={() => setForm({ series: s })} aria-label="Bearbeiten"><Icon name="edit" /></button>
@@ -86,7 +86,7 @@ export default function AppointmentsTab() {
             <li key={e.id} className="list-item">
               <div className="grow">
                 <div className="list-title">{teamById[e.team_id]?.name} · {e.kind === 'spiel' ? (e.is_away ? 'Auswärtsspiel' : 'Heimspiel') : e.title || KIND_LABEL[e.kind]}</div>
-                <div className="small">{fmtDate(new Date(e.starts_at))} {hm(new Date(e.starts_at))}–{hm(new Date(e.ends_at))} · {e.is_away ? (e.venue || 'auswärts') : fieldById[e.field_id]?.short_name}</div>
+                <div className="small">{fmtDate(new Date(e.starts_at))} {hm(new Date(e.starts_at))}–{hm(new Date(e.ends_at))} · {e.is_away ? (e.venue || 'auswärts') : fieldLabel(e.field_id)}</div>
                 {e.opponent && <div className="muted small">gegen {e.opponent}{e.source !== 'manual' ? ` · importiert (${e.source})` : ''}</div>}
               </div>
               <button className="icon-btn" onClick={() => setForm({ event: e })} aria-label="Bearbeiten"><Icon name="edit" /></button>

@@ -6,16 +6,37 @@
 
 -- ---------- Tabellen ------------------------------------------------
 
--- Sportplätze
+-- Sportanlagen (Orte): Scharmede, Thüle. Die Farbe im Plan gehört zur Anlage.
+create table if not exists public.sites (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,              -- z. B. "Sportanlage Thüle"
+  short_name  text not null,              -- z. B. "Thüle"
+  address     text,
+  color       text,                       -- Farbe im Plan, z. B. "#c62828"
+  sort        int  not null default 0
+);
+
+-- Plätze (buchbare Ressourcen) einer Sportanlage, z. B. Thüle Platz 1 und Platz 2.
+-- Doppelbelegung wird pro Platz geprüft.
 create table if not exists public.fields (
   id          uuid primary key default gen_random_uuid(),
-  name        text not null,              -- z. B. "Sportplatz Scharmede"
-  short_name  text not null,              -- z. B. "Scharmede" (für Umschalter)
-  address     text,
-  color       text,                       -- Farbe im Plan, z. B. "#2e7d32"
+  name        text not null,              -- z. B. "Platz 1" oder "Fußballplatz"
+  short_name  text not null,              -- Kürzel im Kalender, z. B. "P1"
+  address     text,                       -- (veraltet, Adresse steht an der Sportanlage)
+  color       text,                       -- (veraltet, Farbe steht an der Sportanlage)
   sort        int  not null default 0
 );
 alter table public.fields add column if not exists color text;
+alter table public.fields add column if not exists site_id uuid references public.sites(id) on delete cascade;
+
+-- Umstellung älterer Installationen: jeder Platz ohne Anlage bekommt eine eigene Anlage
+do $$ declare f record; s uuid; begin
+  for f in select * from public.fields where site_id is null loop
+    insert into public.sites (name, short_name, address, color, sort)
+    values (f.name, f.short_name, f.address, f.color, f.sort) returning id into s;
+    update public.fields set site_id = s where id = f.id;
+  end loop;
+end $$;
 
 -- Personen (Trainer, Betreuer, Vorstand). Können, müssen aber kein Login haben.
 create table if not exists public.people (
@@ -256,6 +277,7 @@ create or replace view public.people_public as
 
 -- ---------- Row Level Security --------------------------------------
 
+alter table public.sites             enable row level security;
 alter table public.fields            enable row level security;
 alter table public.people            enable row level security;
 alter table public.teams             enable row level security;
@@ -269,7 +291,7 @@ alter table public.invites           enable row level security;
 
 -- Lesen: alle angemeldeten Nutzer mit Profil
 do $$ declare t text; begin
-  foreach t in array array['fields','teams','team_contacts','board_members','series','series_exceptions','events'] loop
+  foreach t in array array['sites','fields','teams','team_contacts','board_members','series','series_exceptions','events'] loop
     execute format('drop policy if exists "read_all" on public.%I', t);
     execute format('create policy "read_all" on public.%I for select to authenticated using (public.my_role() <> ''none'')', t);
   end loop;
@@ -277,7 +299,7 @@ end $$;
 
 -- Schreiben Stammdaten: nur Admin
 do $$ declare t text; begin
-  foreach t in array array['fields','teams','team_contacts','board_members','invites'] loop
+  foreach t in array array['sites','fields','teams','team_contacts','board_members','invites'] loop
     execute format('drop policy if exists "admin_write" on public.%I', t);
     execute format('create policy "admin_write" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
   end loop;
