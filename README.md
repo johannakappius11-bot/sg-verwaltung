@@ -1,4 +1,4 @@
-# Platzplan SG Scharmede/Thüle
+# SG Orga – Organisations-App der SG Scharmede/Thüle
 
 Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert oder spielt wann auf welchem Platz – und wen kann man ansprechen?
 
@@ -125,12 +125,12 @@ Supabase verschickt ohne eigene Einstellung nur sehr wenige Mails (und nur an da
 1. Kostenloses Konto bei [Brevo](https://www.brevo.com) (Sitz Frankreich) anlegen, Absenderadresse bestätigen (z. B. `platzplan@euer-verein.de`).
    Bei Brevo unter **SMTP & API** die SMTP-Zugangsdaten ansehen.
 2. In Supabase: **Authentication → Emails → SMTP Settings** → „Enable custom SMTP":
-   Host `smtp-relay.brevo.com`, Port `587`, Benutzer + Passwort von Brevo, Absendername „Platzplan SG".
+   Host `smtp-relay.brevo.com`, Port `587`, Benutzer + Passwort von Brevo, Absendername „SG Orga".
 3. **Authentication → Emails → Templates**: Die Vorlagen **„Confirm signup"** und **„Magic Link"** so ändern,
-   dass **auch der Code** drinsteht (wichtig für iPhones, siehe [9](#9-hilfe-bei-problemen)). Betreff z. B. „Dein Anmelde-Code für den Platzplan", Text:
+   dass **auch der Code** drinsteht (wichtig für iPhones, siehe [9](#9-hilfe-bei-problemen)). Betreff z. B. „Dein Anmelde-Code für SG Orga", Text:
 
    ```html
-   <h2>Anmeldung beim Platzplan</h2>
+   <h2>Anmeldung bei SG Orga</h2>
    <p>Dein Code: <strong style="font-size:24px;letter-spacing:4px">{{ .Token }}</strong></p>
    <p>Gib den Code in der App ein – oder tippe auf diesen Link:</p>
    <p><a href="{{ .ConfirmationURL }}">Jetzt anmelden</a></p>

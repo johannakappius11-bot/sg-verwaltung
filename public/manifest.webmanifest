@@ -1,7 +1,7 @@
 {
-  "name": "Platzplan SG Scharmede/Thüle",
-  "short_name": "Platzplan",
-  "description": "Platzbelegung und Ansprechpartner von SC Concordia Scharmede und VfL Thüle",
+  "name": "SG Orga – SG Scharmede/Thüle",
+  "short_name": "SG Orga",
+  "description": "Organisations-App von SC Concordia Scharmede und VfL Thüle: Platzbelegung, Mannschaften und Ansprechpartner",
   "lang": "de",
   "start_url": "/",
   "scope": "/",

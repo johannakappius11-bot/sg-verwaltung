@@ -70,7 +70,7 @@ function RealDatenschutz() {
     <div className="page legal">
       <Back />
       <h1>Datenschutzerklärung</h1>
-      <p className="muted small">für die App „Platzplan SG Scharmede/Thüle“ · Stand: November 2026</p>
+      <p className="muted small">für die App „SG Orga“ der SG Scharmede/Thüle · Stand: November 2026</p>
 
       <h2>1. Verantwortlicher</h2>
       <p>VfL 1919 Thüle e.V., Stangenweg 48, 33154 Salzkotten, vertreten durch den Vorstand (siehe <Link to="/impressum">Impressum</Link>).<br />

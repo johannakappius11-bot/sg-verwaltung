@@ -97,7 +97,7 @@ export default function App() {
     const params = match(pattern, path);
     if (params) return <Shell path={path} nav><Page params={params} /></Shell>;
   }
-  return <Shell path={path} nav><div className="page"><h1>Seite nicht gefunden</h1><button className="btn" onClick={() => navigate('/')}>Zum Platzplan</button></div></Shell>;
+  return <Shell path={path} nav><div className="page"><h1>Seite nicht gefunden</h1><button className="btn" onClick={() => navigate('/')}>Zur Startseite</button></div></Shell>;
 }
 
 function Shell({ children, nav, path }) {

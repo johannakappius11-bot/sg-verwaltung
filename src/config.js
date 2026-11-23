@@ -2,7 +2,7 @@
 //  Vereins-Einstellungen – hier könnt ihr Namen, Logos und Texte ändern.
 // =====================================================================
 export const config = {
-  appName: 'Platzplan SG',
+  appName: 'SG Orga',
   title: 'SG Scharmede/Thüle',
   subtitle: 'Organisations-App',       // Zeile unter dem Namen im Kopf der App
   clubs: ['SC Concordia Scharmede', 'VfL Thüle'],

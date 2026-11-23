@@ -37,7 +37,7 @@ const replacements = [
 for (const [a, b] of replacements) js = js.split(a).join(b);
 js = js.replace(/<\/script/gi, '<\\/script');
 
-const html = `<title>Platzplan Demo</title>
+const html = `<title>SG Orga Demo</title>
 <meta name="theme-color" content="#f2f2f2">
 <style>${css}</style>
 <div id="root"></div>

@@ -43,7 +43,7 @@ export default function InstallPage() {
       <h1>App installieren</h1>
       {standalone
         ? <div className="alert alert-info">Die App ist bereits auf deinem Startbildschirm installiert. 👍</div>
-        : <p>Du kannst den Platzplan wie eine App auf deinen Startbildschirm legen. Es ist kein App Store nötig.</p>}
+        : <p>Du kannst SG Orga wie eine App auf deinen Startbildschirm legen. Es ist kein App Store nötig.</p>}
       {isAndroid ? [android, ios] : [ios, android]}
       <section className="card">
         <h2>Anmelden in der installierten App</h2>

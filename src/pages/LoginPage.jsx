@@ -62,7 +62,7 @@ export default function LoginPage({ inviteToken }) {
       {invite === 'invalid' && <div className="alert alert-error">Dieser Einladungslink ist ungültig oder wurde deaktiviert. Bitte frage beim Vorstand nach einem aktuellen Link.</div>}
       <h1>{isJoin ? 'Willkommen!' : 'Anmelden'}</h1>
       <p>{isJoin
-        ? `Du wurdest zum Platzplan der ${config.title} eingeladen. Gib deinen Namen und deine E-Mail-Adresse ein – ein Passwort brauchst du nicht.`
+        ? `Du wurdest zu ${config.appName}, der Organisations-App der ${config.title}, eingeladen. Gib deinen Namen und deine E-Mail-Adresse ein – ein Passwort brauchst du nicht.`
         : 'Gib deine E-Mail-Adresse ein. Wir schicken dir einen Anmelde-Link und einen Code – ein Passwort brauchst du nicht.'}</p>
 
       {isDemo && step === 'email' && <DemoLogin />}
