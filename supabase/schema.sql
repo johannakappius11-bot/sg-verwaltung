@@ -240,7 +240,7 @@ create trigger on_auth_user_created
 
 -- Einwilligungszeitpunkt automatisch setzen
 create or replace function public.people_consent_ts() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   if new.consent and (tg_op = 'INSERT' or not old.consent) then new.consent_at := now(); end if;
   if not new.consent then new.consent_at := null; end if;
@@ -273,13 +273,21 @@ end $$;
 
 -- ---------- Öffentliche Sicht auf Personen (Einwilligung!) ---------
 -- Foto, Telefon und E-Mail nur, wenn die Person eingewilligt hat.
-create or replace view public.people_public as
+-- Die Funktion liest alle Personen (an RLS vorbei) und gibt Kontaktdaten nur bei Einwilligung heraus;
+-- die Ansicht selbst läuft mit den Rechten des Aufrufers (security_invoker).
+create or replace function public.people_public_rows()
+returns table (id uuid, name text, phone text, email text, photo_path text)
+language sql stable security definer set search_path = public as $$
   select id, name,
-         case when consent then phone end      as phone,
-         case when consent then email end      as email,
-         case when consent then photo_path end as photo_path
+         case when consent then phone end,
+         case when consent then email end,
+         case when consent then photo_path end
   from public.people
-  where public.my_role() <> 'none';
+  where public.my_role() <> 'none'
+$$;
+drop view if exists public.people_public;
+create view public.people_public with (security_invoker = on) as
+  select * from public.people_public_rows();
 
 -- ---------- Row Level Security --------------------------------------
 
@@ -340,12 +348,15 @@ drop policy if exists "admin_update" on public.profiles;
 create policy "admin_update" on public.profiles for update to authenticated
   using (public.is_admin()) with check (public.is_admin());
 
--- Rechte
+-- Rechte: Funktionen standardmäßig für niemanden aufrufbar, dann gezielt freigeben
+revoke execute on all functions in schema public from public, anon;
+grant execute on function public.check_invite(text) to anon, authenticated;       -- Einladungsseite
+grant execute on function public.my_role(), public.is_admin(), public.my_team_ids(),
+  public.can_edit_team(uuid), public.photo_visible(text), public.people_public_rows(),
+  public.admin_delete_user(uuid), public.delete_my_account() to authenticated;   -- Regeln + App
+revoke execute on function public.handle_new_user(), public.people_consent_ts() from authenticated; -- nur Trigger
 grant select on public.people_public to authenticated;
 revoke all on public.people_public from anon;
-grant execute on function public.check_invite(text) to anon, authenticated;
-revoke execute on function public.admin_delete_user(uuid) from anon;
-revoke execute on function public.delete_my_account() from anon;
 
 -- ---------- Speicher für Fotos ---------------------------------------
 -- Privater Bucket. Fotos sind nur sichtbar, wenn die Person eingewilligt hat.
