@@ -25,6 +25,11 @@ export const config = {
   dayStartHour: 9,
   dayEndHour: 22,
 
+  // Verbindung zur Datenbank (Supabase, Frankfurt). Beide Werte sind öffentlich –
+  // die Daten schützt die Datenbank selbst. Den "service_role"/"Secret key" NIE hier eintragen!
+  supabaseUrl: 'https://jsfloxvcxahisiqhfohq.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzZmxveHZjeGFoaXNpcWhmb2hxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MTY1MDAsImV4cCI6MjExMDk5MjUwMH0.etbwBpEtFrkbiUSD5MusDEjz4XK7cCiSozteBRM0JGk',
+
   // Kontakt für Fragen zur App (erscheint auf der Login-Seite)
   supportContact: 'Bitte wende dich an den Vorstand.',
 };

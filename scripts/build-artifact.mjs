@@ -12,6 +12,7 @@ const out = process.argv[2] || join(root, 'dist-artifact', 'platzplan-demo.html'
 const outDir = join(root, 'dist-artifact');
 
 process.env.VITE_ROUTER = 'memory';
+process.env.VITE_DEMO = 'true';
 delete process.env.VITE_SUPABASE_URL; delete process.env.VITE_SUPABASE_ANON_KEY;
 await build({
   root, base: './', logLevel: 'warn', plugins: [react()], esbuild: { charset: 'utf8' },

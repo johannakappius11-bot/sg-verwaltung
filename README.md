@@ -30,7 +30,7 @@ Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert 
 
 ## 1. Sofort ausprobieren (Demo-Modus)
 
-Solange keine Datenbank eingetragen ist, startet die App im **Demo-Modus** mit erfundenen Testdaten
+Mit `VITE_DEMO=true` (oder ohne eingetragene Datenbank in `src/config.js`) startet die App im **Demo-Modus** mit erfundenen Testdaten
 (12 Mannschaften, Trainingszeiten, Spiele, Vorstand). Oben kann man die Rolle wechseln
 (Admin, Trainerin der D-Jugend, Mitglied, Gast). Demo-Daten bleiben nur im eigenen Browser.
 
@@ -44,7 +44,7 @@ npm install
 npm run dev
 ```
 
-Dann im Browser `http://localhost:5173` öffnen. Im selben WLAN kann man auch mit dem Handy die angezeigte „Network"-Adresse öffnen.
+Dann im Browser `http://localhost:5173` öffnen. Für den Demo-Modus statt `npm run dev` den Befehl `VITE_DEMO=true npm run dev` nutzen. Im selben WLAN kann man auch mit dem Handy die angezeigte „Network"-Adresse öffnen.
 
 **Online** geht es ebenso: Die App wie in [Schritt 3.4](#34-app-veröffentlichen) veröffentlichen, aber **ohne** die beiden Supabase-Werte – dann läuft sie online im Demo-Modus.
 
