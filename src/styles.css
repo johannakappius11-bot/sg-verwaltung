@@ -517,3 +517,14 @@ button.ws-row:active { filter: brightness(.96); }
 .org-text { display: flex; flex-direction: column; min-width: 0; }
 .org-pos { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .org-name { font-weight: 600; }
+
+/* Zuständig für: Themen */
+.topics { margin-top: 6px; display: grid; gap: 4px; }
+.topics-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.topic-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.topic { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 14px; background: var(--surface-2); font-size: .88rem; }
+.topic-edit { padding-right: 2px; }
+.topic-edit button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.topics-input { display: grid; gap: 8px; }
+.topics-input .row input { flex: 1; min-width: 0; }
+.topics-input .btn { flex: none; }

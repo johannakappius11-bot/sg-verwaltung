@@ -6,6 +6,7 @@ import { useApp } from '../store.jsx';
 import { Empty, Link, PersonCard } from '../components/ui.jsx';
 import ListFilter, { clubLabel, matchesClub, norm, usePersistentFilter } from '../components/ListFilter.jsx';
 import OrgChart from './OrgChart.jsx';
+import { TopicChips, topicsOf } from '../components/Topics.jsx';
 
 const TEAM_CAT = 'Trainer & Betreuer';
 const VIEW_KEY = 'platzplan-contacts-view';
@@ -21,7 +22,7 @@ export default function BoardPage() {
     .map((c) => ({ c, team: data.teams.find((t) => t.id === c.team_id) }))
     .filter(({ team }) => team?.active)
     .sort((a, b) => a.team.sort - b.team.sort || (b.c.is_primary - a.c.is_primary) || a.c.sort - b.c.sort)
-    .map(({ c, team }) => ({ id: `tc-${c.id}`, person_id: c.person_id, position: c.role, club: team.club, responsibility: team.name, category: TEAM_CAT, team }));
+    .map(({ c, team }) => ({ id: `tc-${c.id}`, person_id: c.person_id, position: c.role, club: team.club, teamName: team.name, category: TEAM_CAT, team }));
   const all = [...data.board, ...teamEntries];
 
   // Reihenfolge der Bereiche: Trainer & Betreuer nach der Jugendabteilung
@@ -33,7 +34,7 @@ export default function BoardPage() {
     if (!matchesClub(b.club, filter.club)) return false;
     if (filter.cat.length && !filter.cat.includes(b.category || 'Vorstand')) return false;
     if (filter.q) {
-      const hay = norm([personById[b.person_id]?.name, b.position, b.responsibility, b.club].join(' '));
+      const hay = norm([personById[b.person_id]?.name, b.position, b.teamName, ...topicsOf(b), b.club].join(' '));
       if (!norm(filter.q).split(/\s+/).every((w) => hay.includes(w))) return false;
     }
     return true;
@@ -68,7 +69,8 @@ export default function BoardPage() {
                     {b.team ? <>{b.position} · <Link to={`/mannschaften/${b.team.id}`}>{b.team.name}</Link></> : b.position}
                     {b.club && <span className={`badge ${clubLabel(b.club) === 'SG' ? 'badge-sg' : ''}`}>{clubLabel(b.club)}</span>}
                   </div>
-                  <PersonCard person={personById[b.person_id]} subtitle={!b.team && b.responsibility ? `Zuständig für: ${b.responsibility}` : null} />
+                  <PersonCard person={personById[b.person_id]} />
+                  {!b.team && <TopicChips topics={topicsOf(b)} />}
                 </div>
               ))}
             </section>

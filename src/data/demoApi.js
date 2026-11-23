@@ -4,7 +4,7 @@
 import { seed } from './seed.js';
 import { addDays, startOfWeek, combine, ymd } from '../lib/dates.js';
 
-const STORE_KEY = 'platzplan-demo-v7';
+const STORE_KEY = 'platzplan-demo-v8';
 const USER_KEY = 'platzplan-demo-user';
 let counter = 0;
 const newId = () => `d${Date.now().toString(36)}${(counter++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -22,7 +22,7 @@ function buildDb() {
     people: seed.people.map((p) => ({ id: id(p.key), user_id: null, name: p.name, phone: p.phone, email: p.email, photo_path: null, consent: p.consent, consent_at: p.consent ? new Date().toISOString() : null })),
     teams: seed.teams.map((t, i) => ({ id: id('t' + t.key), name: t.name, short_name: t.short_name, category: t.category, club: t.club, league: t.league || null, home_field_id: id('f' + t.home), fussballde_widget_id: null, ical_url: null, active: true, sort: i + 1 })),
     team_contacts: seed.contacts.map(([t, p, role, prim], i) => ({ id: id('tc' + i), team_id: id('t' + t), person_id: id(p), role, is_primary: prim, sort: i })),
-    board_members: seed.board.map(([p, position, club, responsibility, sort, category]) => ({ id: id('b' + p), person_id: id(p), position, club, responsibility, sort, category })),
+    board_members: seed.board.map(([p, position, club, responsibility, sort, category]) => ({ id: id('b' + p), person_id: id(p), position, club, responsibility: null, topics: (responsibility || '').split(',').map((s) => s.trim()).filter(Boolean), sort, category })),
     series: seed.series.map(([t, f, weekday, a, b], i) => ({ id: id('s' + i), team_id: id('t' + t), field_id: id('f' + f), kind: 'training', weekday, start_time: a + ':00', end_time: b + ':00', valid_from: ymd(addDays(monday, -28)), valid_until: null, note: null })),
     series_exceptions: [],
     events: [

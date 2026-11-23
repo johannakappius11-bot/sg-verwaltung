@@ -83,7 +83,7 @@ Handy (Browser/App)  ──►  App-Dateien (Cloudflare Pages oder Vereins-Websp
 | `teams` | Mannschaften mit Bereich (Senioren, Junioren, Weitere), Liga, Verein (Scharmede, Thüle oder SG), Heimplatz, optional fussball.de-Widget-ID und Kalender-Abo |
 | `people` | Personen (Trainer, Betreuer, Vorstand) – mit oder ohne App-Konto; Telefon/Foto/E-Mail + Einwilligung |
 | `team_contacts` | Wer ist Ansprechpartner welcher Mannschaft (Trainer, Co-Trainer, Betreuer) |
-| `board_members` | Ansprechpartner: Funktion, Bereich (Vorstand, Jugendabteilung …), Verein, Zuständigkeit |
+| `board_members` | Ansprechpartner: Funktion, Bereich (Vorstand, Jugendabteilung …), Verein, Zuständig für (einzelne Themen) |
 | `series` | Wiederkehrende Termine (z. B. jeden Dienstag 18–19:30, ab/bis Datum) |
 | `series_exceptions` | Einzelne abgesagte Termine einer Serie |
 | `events` | Einzeltermine und Spiele (Heim: mit Platz; Auswärts: Spielort, Gegner) |

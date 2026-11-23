@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { config } from '../config.js';
 import { useApp } from '../store.jsx';
 import { Avatar, Empty, PersonCard, Sheet } from '../components/ui.jsx';
+import { TopicChips, topicsOf } from '../components/Topics.jsx';
 
 const isFirstChair = (pos = '') => /^\s*1\.?\s*vorsitz/i.test(pos);
 const isSecondChair = (pos = '') => /^\s*2\.?\s*vorsitz/i.test(pos);
@@ -64,7 +65,8 @@ export default function OrgChart() {
       {open && (
         <Sheet title={open.position} onClose={() => setOpen(null)}>
           <p className="muted small">{open.club}</p>
-          <PersonCard person={personById[open.person_id]} subtitle={open.responsibility ? `Zuständig für: ${open.responsibility}` : null} />
+          <PersonCard person={personById[open.person_id]} />
+          <TopicChips topics={topicsOf(open)} />
         </Sheet>
       )}
     </div>

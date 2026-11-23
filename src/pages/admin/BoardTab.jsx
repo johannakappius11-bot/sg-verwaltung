@@ -5,6 +5,7 @@ import { useApp } from '../../store.jsx';
 import { ErrorBox, Field, Icon, Sheet } from '../../components/ui.jsx';
 import { confirmDialog } from '../../components/dialog.jsx';
 import PersonForm from '../../components/PersonForm.jsx';
+import { TopicsInput, topicsOf } from '../../components/Topics.jsx';
 
 export default function BoardTab({ people, reloadPeople }) {
   const { data, personById, isAdmin } = useApp();
@@ -18,7 +19,7 @@ export default function BoardTab({ people, reloadPeople }) {
           <li key={b.id} className="list-item">
             <div className="grow">
               <div className="list-title">{personById[b.person_id]?.name}</div>
-              <div className="muted small">{b.category || 'Vorstand'} · {b.position} · {b.club}{b.responsibility ? ` · ${b.responsibility}` : ''}</div>
+              <div className="muted small">{b.category || 'Vorstand'} · {b.position} · {b.club}{topicsOf(b).length ? ` · ${topicsOf(b).join(', ')}` : ''}</div>
             </div>
             <button className="icon-btn" onClick={() => setEdit(b)} aria-label="Bearbeiten"><Icon name="edit" /></button>
           </li>
@@ -33,14 +34,14 @@ export default function BoardTab({ people, reloadPeople }) {
 function BoardForm({ entry, people, reloadPeople, onClose }) {
   const { data, reloadData, toast } = useApp();
   const isNew = !entry.id;
-  const [f, setF] = useState({ person_id: entry.person_id || '', position: entry.position || '', category: entry.category || config.contactGroups[0], club: entry.club || config.clubs[0], responsibility: entry.responsibility || '', sort: entry.sort ?? data.board.length + 1 });
+  const [f, setF] = useState({ person_id: entry.person_id || '', position: entry.position || '', category: entry.category || config.contactGroups[0], club: entry.club || config.clubs[0], topics: topicsOf(entry), sort: entry.sort ?? data.board.length + 1 });
   const [error, setError] = useState('');
   const [personForm, setPersonForm] = useState(null);
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
   const person = people.find((p) => p.id === f.person_id);
   async function save() {
     if (!f.person_id || !f.position.trim()) return setError('Bitte Person und Funktion angeben.');
-    const row = { ...f, sort: Number(f.sort) || 0, responsibility: f.responsibility || null };
+    const row = { ...f, sort: Number(f.sort) || 0, responsibility: null };
     try { if (isNew) await api.insert('board_members', row); else await api.update('board_members', entry.id, row); await reloadData(); toast('Gespeichert'); onClose(); }
     catch (e) { setError(e.message); }
   }
@@ -74,7 +75,10 @@ function BoardForm({ entry, people, reloadPeople, onClose }) {
               {[...config.clubs, config.title].map((c) => <option key={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Zuständig für"><input id="board-resp" value={f.responsibility} onChange={set('responsibility')} placeholder="z. B. Platzbelegung, Flutlicht, Trikots" /></Field>
+          <Field label="Zuständig für" hint="Jedes Thema einzeln hinzufügen (Enter oder „Hinzufügen“).">
+            <TopicsInput id="board-topics" value={f.topics} onChange={(topics) => setF((x) => ({ ...x, topics }))}
+              suggestions={[...new Set(data.board.flatMap(topicsOf))].sort()} />
+          </Field>
           <Field label="Reihenfolge"><input id="board-sort" type="number" inputMode="numeric" value={f.sort} onChange={set('sort')} /></Field>
           <ErrorBox error={error} />
         </div>

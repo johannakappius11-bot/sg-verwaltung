@@ -83,7 +83,8 @@ create table if not exists public.board_members (
   person_id       uuid not null references public.people(id) on delete cascade,
   position        text not null,          -- "1. Vorsitzender"
   club            text,                   -- "SC Concordia Scharmede" / "VfL Thüle" / "SG"
-  responsibility  text,                   -- "Platzbelegung, Jugend"
+  responsibility  text,                   -- (veraltet, ersetzt durch topics)
+  topics          text[] not null default '{}', -- Zuständig für: einzelne Themen
   category        text not null default 'Vorstand', -- Bereich: Vorstand, Jugendabteilung, Spielbetrieb …
   sort            int not null default 0
 );
@@ -92,6 +93,12 @@ create table if not exists public.board_members (
 alter table public.teams add column if not exists club text;
 alter table public.teams add column if not exists league text;
 alter table public.board_members add column if not exists category text not null default 'Vorstand';
+alter table public.board_members add column if not exists topics text[] not null default '{}';
+-- Alte Zuständigkeiten ("A, B; C") in einzelne Themen aufteilen
+update public.board_members
+   set topics = array(select trim(x) from unnest(regexp_split_to_array(responsibility, '[,;]')) x where trim(x) <> ''),
+       responsibility = null
+ where responsibility is not null and cardinality(topics) = 0;
 
 -- Wiederkehrende Termine (z. B. jeden Dienstag 18:00–19:30)
 create table if not exists public.series (
