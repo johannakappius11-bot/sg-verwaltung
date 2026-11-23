@@ -10,7 +10,7 @@ function Back() {
   return <Link to={user ? '/profil' : '/'} className="back">← Zurück</Link>;
 }
 
-export function ImpressumPage() {
+function RealImpressum() {
   return (
     <div className="page legal">
       <Back />
@@ -65,7 +65,7 @@ export function ImpressumPage() {
   );
 }
 
-export function DatenschutzPage() {
+function RealDatenschutz() {
   return (
     <div className="page legal">
       <Back />
@@ -133,3 +133,18 @@ export function DatenschutzPage() {
     </div>
   );
 }
+
+// Demo-Vorschau: neutrale Texte statt echter Vereinsangaben
+function DemoLegal({ title }) {
+  return (
+    <div className="page legal">
+      <Back />
+      <h1>{title}</h1>
+      <p>Dies ist eine Demo-Version mit erfundenen Testdaten. Es werden keine Daten an einen Server übertragen;
+        alles bleibt nur in diesem Browser gespeichert. {title} der echten App stehen in der echten App.</p>
+    </div>
+  );
+}
+const DEMO = import.meta.env.VITE_DEMO === 'true';
+export const ImpressumPage = DEMO ? () => <DemoLegal title="Impressum" /> : RealImpressum;
+export const DatenschutzPage = DEMO ? () => <DemoLegal title="Datenschutzerklärung" /> : RealDatenschutz;
