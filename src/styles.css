@@ -482,3 +482,8 @@ button.ws-row:active { filter: brightness(.96); }
 .sw.sw-warn { width: 16px; height: 16px; border-radius: 50%; background: var(--warn-edge); color: #fff; font-size: .65rem; font-weight: 800; }
 
 .team-league { margin: -8px 0 4px; font-weight: 600; }
+
+.account-box { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; }
+.account-box h3 { margin: 0; }
+.badge.role-admin { background: var(--primary); color: var(--primary-text); }
+.badge.role-board { background: var(--warn-bg); color: var(--warn); }

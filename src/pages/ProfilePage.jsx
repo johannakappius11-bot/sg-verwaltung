@@ -5,7 +5,7 @@ import { Avatar, ErrorBox, Field, Link } from '../components/ui.jsx';
 import PhotoInput from '../components/PhotoInput.jsx';
 import { alertDialog, confirmDialog } from '../components/dialog.jsx';
 
-const ROLE = { member: 'Mitglied', trainer: 'Trainer', admin: 'Admin / Vorstand' };
+const ROLE = { member: 'Mitglied', trainer: 'Trainer', board: 'Vorstand', admin: 'Admin' };
 
 export default function ProfilePage() {
   const { me, reloadMe, reloadData, toast, refreshPhotos, data } = useApp();

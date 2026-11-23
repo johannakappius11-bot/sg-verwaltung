@@ -7,7 +7,7 @@ Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert 
 - ⚽ **Spiele**: Heimspiele belegen den Platz, Auswärtsspiele stehen als „Auswärts" mit Gegner und Spielort im Plan
 - 👥 **Mannschaften** mit Trainern/Betreuern und **Ansprechpartner** (Vorstand, Jugend, Spielbetrieb, Platzwarte …) mit Zuständigkeiten – beide filterbar nach Verein (SG-Einträge bei beiden), Bereich und per Suche
 - 🔐 **Anmeldung ohne Passwort** (E-Mail-Link oder 6-stelliger Code), Zugang nur per **Einladungslink**
-- 🛠 **Verwaltung**: Trainingszeiten (auch wöchentlich wiederkehrend), Absagen einzelner Termine, **Warnung bei Doppelbelegung**, Import von Spielen (Kalenderdatei/CSV), Nutzer, Rollen, Einladungslinks
+- 🛠 **Verwaltung**: Trainingszeiten (auch wöchentlich wiederkehrend), Absagen einzelner Termine, **Warnung bei Doppelbelegung**, Import von Spielen (Kalenderdatei/CSV), Personen & Konten, Rollen, Einladungslinks
 - 🛡 **DSGVO**: Foto/Telefon/E-Mail nur mit Einwilligung (jederzeit widerrufbar), Datenbank in Frankfurt
 - 📱 Läuft auf **iPhone und Android** gleich, installierbar auf dem Startbildschirm
 
@@ -32,7 +32,7 @@ Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert 
 
 Mit `VITE_DEMO=true` (oder ohne eingetragene Datenbank in `src/config.js`) startet die App im **Demo-Modus** mit erfundenen Testdaten
 (12 Mannschaften, Trainingszeiten, Spiele, Vorstand). Oben kann man die Rolle wechseln
-(Admin, Trainer der D-Jugend, Mitglied). Demo-Daten bleiben nur im eigenen Browser.
+(Admin, Vorstand, Trainer der D-Jugend, Mitglied). Demo-Daten bleiben nur im eigenen Browser.
 
 **Auf dem eigenen Computer** (einmalig [Node.js](https://nodejs.org) installieren, Version 20 oder neuer):
 
@@ -87,12 +87,13 @@ Handy (Browser/App)  ──►  App-Dateien (Cloudflare Pages oder Vereins-Websp
 | `series` | Wiederkehrende Termine (z. B. jeden Dienstag 18–19:30, ab/bis Datum) |
 | `series_exceptions` | Einzelne abgesagte Termine einer Serie |
 | `events` | Einzeltermine und Spiele (Heim: mit Platz; Auswärts: Spielort, Gegner) |
-| `profiles` | App-Konten mit Rolle (Mitglied, Trainer, Admin) |
+| `profiles` | App-Konten mit Rolle (Mitglied, Trainer, Vorstand, Admin) |
 | `invites` | Einladungslinks (Rolle, aktiv/deaktiviert, Anzahl Registrierungen) |
 
 **Die Rechte werden in der Datenbank selbst geprüft** (Row Level Security), nicht nur in der App:
 - Mitglied: nur lesen
 - Trainer: nur Termine der Mannschaften, bei denen sie als Ansprechpartner eingetragen sind
+- Vorstand: Ansprechpartner pflegen, Personen ohne eigenes Konto anlegen und bearbeiten
 - Admin: alles
 - Telefon, Foto und E-Mail anderer Personen liefert die Datenbank **nur bei Einwilligung** aus.
 - Registrieren kann sich nur, wer einen gültigen Einladungslink hat. **Der allererste Nutzer wird automatisch Admin.**
@@ -185,7 +186,7 @@ Der **erste** Nutzer, der sich registriert, wird automatisch Admin – dafür br
 1. In der App die Adresse `…/einladung/start` aufrufen, z. B. `https://platzplan-xyz.pages.dev/einladung/start`
    (solange noch niemand registriert ist, funktioniert jeder Einladungslink).
 2. Namen und E-Mail eingeben → Code aus der E-Mail eingeben → fertig, ihr seid Admin.
-3. Weitere Vorstände: Einladungslink erstellen, registrieren lassen, dann unter **Verwalten → Nutzer** die Rolle auf „Admin/Vorstand" stellen.
+3. Weitere Admins oder Vorstände: Einladungslink erstellen, registrieren lassen, dann unter **Verwalten → Personen & Konten** die Person antippen und die Rolle auf „Admin“ bzw. „Vorstand“ stellen.
 
 ### 3.7 Logos, Namen, Impressum, Datenschutz
 
@@ -224,11 +225,11 @@ Danach unter **Verwalten → Plätze** die Sportanlagen (Scharmede, Thüle) mit 
 | Trainer darf Termine pflegen | 1. Trainer registriert sich (Trainer-Einladungslink oder Rolle unter „Nutzer" auf „Trainer"); 2. unter Mannschaften als Ansprechpartner eintragen |
 | Person mit Konto verknüpfen | Bei der Person die **gleiche E-Mail-Adresse** eintragen, *bevor* sie sich registriert – dann wird automatisch verknüpft |
 | Einladungslink teilen / sperren | Verwalten → Einladungen (Teilen, Deaktivieren, Neu erzeugen) |
-| Nutzer entfernen | Verwalten → Nutzer → Löschen |
+| Rolle ändern / App-Konto löschen | Verwalten → Personen & Konten → Person antippen → Abschnitt „App-Konto“ |
 
 **Doppelbelegung:** Beim Speichern prüft die App den Platz (bei wöchentlichen Terminen die nächsten 26 Wochen). Gibt es Überschneidungen, erscheint eine Warnung – man kann trotzdem speichern (z. B. wenn sich zwei Jugendteams den Platz bewusst teilen). Im Plan sind solche Termine orange gestrichelt markiert.
 
-**Rollen:** Mitglied (nur lesen), Trainer (Termine der eigenen Mannschaft pflegen), Admin/Vorstand (alles).
+**Rollen:** Mitglied (nur lesen), Trainer (Termine der eigenen Mannschaft pflegen), Vorstand (Ansprechpartner pflegen, inkl. Personen ohne eigenes Konto anlegen), Admin (alles: Mannschaften, Plätze, Personen & Konten, Rollen, Einladungen).
 
 ---
 
@@ -323,7 +324,7 @@ Danach unter **Verwalten → Plätze** die Sportanlagen (Scharmede, Thüle) mit 
 
 **„Der Einladungslink ist ungültig."** → Der Link wurde deaktiviert oder neu erzeugt. Admin: Verwalten → Einladungen → aktuellen Link teilen.
 
-**„Ich bin Trainer, kann aber keine Termine anlegen."** → Zwei Dinge müssen stimmen: Rolle „Trainer" (Verwalten → Nutzer) **und** als Ansprechpartner der Mannschaft eingetragen (Verwalten → Mannschaften). Dann App neu öffnen.
+**„Ich bin Trainer, kann aber keine Termine anlegen."** → Zwei Dinge müssen stimmen: Rolle „Trainer" (Verwalten → Personen & Konten) **und** als Ansprechpartner der Mannschaft eingetragen (Verwalten → Mannschaften). Dann App neu öffnen.
 
 **„Nach längerer Zeit bin ich auf dem iPhone abgemeldet."** → iOS löscht bei selten genutzten Web-Apps manchmal gespeicherte Daten. Einfach neu anmelden – alle Termine liegen auf dem Server.
 

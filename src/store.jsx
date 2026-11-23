@@ -82,7 +82,8 @@ export function AppProvider({ children }) {
     return {
       user, me, role, data, photos, toastMsg, loadError,
       teamById, fieldById, personById, siteById, fieldsOfSite, siteColor, colorOf, fieldLabel, contactsForTeam, canEditTeam, editableTeams,
-      isAdmin: role === 'admin', canManage: role === 'admin' || (role === 'trainer' && editableTeams.length > 0),
+      isAdmin: role === 'admin', isBoard: role === 'board' || role === 'admin',
+      canManage: role === 'admin' || role === 'board' || (role === 'trainer' && editableTeams.length > 0),
       toast, reloadData, reloadMe: () => reloadMe(user),
       refreshPhotos: () => api.photoUrls(data.people.map((p) => p.photo_path)).then(setPhotos),
     };

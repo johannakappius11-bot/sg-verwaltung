@@ -8,42 +8,48 @@ import TeamsTab from './admin/TeamsTab.jsx';
 import PeopleTab from './admin/PeopleTab.jsx';
 import BoardTab from './admin/BoardTab.jsx';
 import FieldsTab from './admin/FieldsTab.jsx';
-import UsersTab from './admin/UsersTab.jsx';
 import InvitesTab from './admin/InvitesTab.jsx';
 
+// Reiter und wer sie sieht: admin = alles, board = Vorstand (nur Ansprechpartner), trainer = eigene Termine
 const TABS = [
-  ['termine', 'Termine', AppointmentsTab, false],
-  ['spiele', 'Spiele & Import', GamesTab, false],
-  ['mannschaften', 'Mannschaften', TeamsTab, true],
-  ['personen', 'Personen', PeopleTab, true],
-  ['ansprechpartner', 'Ansprechpartner', BoardTab, true],
-  ['plaetze', 'Plätze', FieldsTab, true],
-  ['nutzer', 'Nutzer', UsersTab, true],
-  ['einladungen', 'Einladungen', InvitesTab, true],
+  ['termine', 'Termine', AppointmentsTab, ['admin', 'trainer']],
+  ['spiele', 'Spiele & Import', GamesTab, ['admin', 'trainer']],
+  ['mannschaften', 'Mannschaften', TeamsTab, ['admin']],
+  ['personen', 'Personen & Konten', PeopleTab, ['admin']],
+  ['ansprechpartner', 'Ansprechpartner', BoardTab, ['admin', 'board']],
+  ['plaetze', 'Plätze', FieldsTab, ['admin']],
+  ['einladungen', 'Einladungen', InvitesTab, ['admin']],
 ];
 
 export default function AdminPage({ params }) {
-  const { isAdmin, canManage } = useApp();
-  const tabs = TABS.filter((t) => isAdmin || !t[3]);
+  const { role, isAdmin, canManage } = useApp();
+  const tabs = TABS.filter((t) => t[3].includes(role));
   const current = tabs.find((t) => t[0] === params.tab) || tabs[0];
-  const Comp = current[2];
 
-  // Vollständige Personenliste (nur für Admins lesbar)
+  // Vollständige Personenliste (Admin, Vorstand) und App-Konten (nur Admin)
   const [people, setPeople] = useState([]);
-  const reloadPeople = useCallback(async () => { if (isAdmin) setPeople(await api.list('people', { order: 'name' })); }, [isAdmin]);
+  const [profiles, setProfiles] = useState([]);
+  const reloadPeople = useCallback(async () => {
+    if (role !== 'admin' && role !== 'board') return;
+    setPeople(await api.list('people', { order: 'name' }));
+    if (role === 'admin') setProfiles(await api.list('profiles', { order: 'email' }));
+  }, [role]);
   useEffect(() => { reloadPeople(); }, [reloadPeople]);
 
-  if (!canManage) return <div className="page"><h1>Verwaltung</h1><p>Für diesen Bereich fehlt dir die Berechtigung.</p></div>;
+  if (!canManage || !current) return <div className="page"><h1>Verwaltung</h1><p>Für diesen Bereich fehlt dir die Berechtigung.</p></div>;
+  const Comp = current[2];
   return (
     <div className="page">
       <h1>Verwaltung</h1>
-      <div className="tabs" role="tablist">
-        {tabs.map(([key, label]) => (
-          <button key={key} role="tab" aria-selected={key === current[0]} className={key === current[0] ? 'on' : ''}
-            onClick={() => navigate(`/verwaltung/${key}`, { replace: true })}>{label}</button>
-        ))}
-      </div>
-      <Comp people={people} reloadPeople={reloadPeople} />
+      {tabs.length > 1 && (
+        <div className="tabs" role="tablist">
+          {tabs.map(([key, label]) => (
+            <button key={key} role="tab" aria-selected={key === current[0]} className={key === current[0] ? 'on' : ''}
+              onClick={() => navigate(`/verwaltung/${key}`, { replace: true })}>{label}</button>
+          ))}
+        </div>
+      )}
+      <Comp people={people} profiles={profiles} reloadPeople={reloadPeople} isAdmin={isAdmin} />
     </div>
   );
 }

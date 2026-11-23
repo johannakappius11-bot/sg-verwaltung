@@ -4,7 +4,7 @@
 import { seed } from './seed.js';
 import { addDays, startOfWeek, combine, ymd } from '../lib/dates.js';
 
-const STORE_KEY = 'platzplan-demo-v6';
+const STORE_KEY = 'platzplan-demo-v7';
 const USER_KEY = 'platzplan-demo-user';
 let counter = 0;
 const newId = () => `d${Date.now().toString(36)}${(counter++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -74,7 +74,8 @@ export function createDemoApi() {
     if (role() === 'admin') return true;
     if (table === 'events' || table === 'series') return myTeams().includes(row.team_id);
     if (table === 'series_exceptions') { const s = db.series.find((x) => x.id === row.series_id); return s && myTeams().includes(s.team_id); }
-    if (table === 'people') return row.user_id === userId;
+    if (table === 'board_members') return role() === 'board';
+    if (table === 'people') return row.user_id === userId || (role() === 'board' && !row.user_id);
     return false;
   }
 
@@ -82,7 +83,7 @@ export function createDemoApi() {
     if (table === 'people_public') {
       return db.people.map((p) => ({ id: p.id, name: p.name, phone: p.consent ? p.phone : null, email: p.consent ? p.email : null, photo_path: p.consent ? p.photo_path : null }));
     }
-    if (table === 'people' && role() !== 'admin') return db.people.filter((p) => p.user_id === userId);
+    if (table === 'people' && role() !== 'admin' && role() !== 'board') return db.people.filter((p) => p.user_id === userId);
     if ((table === 'profiles') && role() !== 'admin') return db.profiles.filter((p) => p.id === userId);
     if (table === 'invites' && role() !== 'admin') return [];
     return db[table] || [];

@@ -143,7 +143,7 @@ create index if not exists events_starts_idx on public.events (starts_at);
 create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   email       text,
-  role        text not null default 'member' check (role in ('member','trainer','admin')),
+  role        text not null default 'member' check (role in ('member','trainer','board','admin')),
   created_at  timestamptz not null default now()
 );
 
@@ -163,7 +163,7 @@ create table if not exists public.invites (
 update public.profiles set role = 'member' where role = 'guest';
 update public.invites  set role = 'member' where role = 'guest';
 alter table public.profiles drop constraint if exists profiles_role_check;
-alter table public.profiles add constraint profiles_role_check check (role in ('member','trainer','admin'));
+alter table public.profiles add constraint profiles_role_check check (role in ('member','trainer','board','admin'));
 alter table public.invites drop constraint if exists invites_role_check;
 alter table public.invites add constraint invites_role_check check (role in ('member','trainer'));
 
@@ -172,6 +172,12 @@ alter table public.invites add constraint invites_role_check check (role in ('me
 create or replace function public.my_role() returns text
 language sql stable security definer set search_path = public as $$
   select coalesce((select role from public.profiles where id = auth.uid()), 'none')
+$$;
+
+-- Vorstand (oder Admin): darf Ansprechpartner pflegen
+create or replace function public.is_board() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.my_role() in ('admin', 'board')
 $$;
 
 create or replace function public.is_admin() returns boolean
@@ -343,6 +349,20 @@ create policy "team_write" on public.series_exceptions for all to authenticated
   using (exists (select 1 from public.series s where s.id = series_id and public.can_edit_team(s.team_id)))
   with check (exists (select 1 from public.series s where s.id = series_id and public.can_edit_team(s.team_id)));
 
+-- Vorstand: Ansprechpartner pflegen, Personen ohne eigenes App-Konto anlegen und bearbeiten
+drop policy if exists "board_write" on public.board_members;
+create policy "board_write" on public.board_members for all to authenticated
+  using (public.is_board()) with check (public.is_board());
+drop policy if exists "board_read" on public.people;
+create policy "board_read" on public.people for select to authenticated using (public.is_board());
+drop policy if exists "board_insert" on public.people;
+create policy "board_insert" on public.people for insert to authenticated
+  with check (public.my_role() = 'board' and user_id is null);
+drop policy if exists "board_update" on public.people;
+create policy "board_update" on public.people for update to authenticated
+  using (public.my_role() = 'board' and user_id is null)
+  with check (public.my_role() = 'board' and user_id is null);
+
 -- Personen: eigene Zeile lesen/ändern, Admin alles. Alle anderen nur über people_public.
 drop policy if exists "own_or_admin" on public.people;
 create policy "own_or_admin" on public.people for all to authenticated
@@ -361,7 +381,7 @@ create policy "admin_update" on public.profiles for update to authenticated
 -- Rechte: Funktionen standardmäßig für niemanden aufrufbar, dann gezielt freigeben
 revoke execute on all functions in schema public from public, anon;
 grant execute on function public.check_invite(text) to anon, authenticated;       -- Einladungsseite
-grant execute on function public.my_role(), public.is_admin(), public.my_team_ids(),
+grant execute on function public.my_role(), public.is_admin(), public.is_board(), public.my_team_ids(),
   public.can_edit_team(uuid), public.photo_visible(text), public.people_public_rows(),
   public.admin_delete_user(uuid), public.delete_my_account() to authenticated;   -- Regeln + App
 revoke execute on function public.handle_new_user(), public.people_consent_ts() from authenticated; -- nur Trigger

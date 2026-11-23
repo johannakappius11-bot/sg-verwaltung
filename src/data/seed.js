@@ -113,6 +113,7 @@ export const seed = {
   // Demo-Nutzer (nur Demo-Modus): Rolle + verknüpfte Person
   demoUsers: [
     { key: 'u_admin', email: 'admin@demo.de', role: 'admin', person: 'v4' },
+    { key: 'u_board', email: 'vorstand@demo.de', role: 'board', person: 'v1' },
     { key: 'u_trainer', email: 'trainer@demo.de', role: 'trainer', person: 'p7' },
     { key: 'u_member', email: 'mitglied@demo.de', role: 'member', person: null, name: 'Max Mitglied' },
   ],

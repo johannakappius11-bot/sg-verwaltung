@@ -58,7 +58,7 @@ function BottomNav({ path }) {
 function DemoBar() {
   const { me } = useApp();
   if (!isDemo || !me) return null;
-  const labels = { admin: 'Admin/Vorstand', trainer: 'Trainer D-Jugend', member: 'Mitglied' };
+  const labels = { admin: 'Admin', board: 'Vorstand', trainer: 'Trainer D-Jugend', member: 'Mitglied' };
   return (
     <div className="demo-bar">
       <span>Demo:</span>
