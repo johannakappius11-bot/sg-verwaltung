@@ -17,7 +17,7 @@ export default function InvitesTab() {
   const create = async (row) => { try { await api.insert('invites', row); toast('Link erstellt'); load(); } catch (e) { alertDialog(e.message); } };
   const share = async (inv) => {
     const url = linkFor(inv);
-    const text = 'Einladung zum Platzplan der SG Schamede/Thüle';
+    const text = 'Einladung zum Platzplan der SG Scharmede/Thüle';
     try {
       if (navigator.share) { await navigator.share({ title: text, text, url }); return; }
     } catch (e) { if (e.name === 'AbortError') return; }

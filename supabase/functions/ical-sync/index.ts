@@ -3,7 +3,7 @@
 // Aufruf: aus der App (nur Admins) oder zeitgesteuert (siehe README, Header "x-cron-secret").
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const HOME_KEYWORDS = (Deno.env.get('HOME_KEYWORDS') || 'Schamede,Thüle,Thuele').split(',').map((s) => s.trim().toLowerCase());
+const HOME_KEYWORDS = (Deno.env.get('HOME_KEYWORDS') || 'Scharmede,Thüle,Thuele').split(',').map((s) => s.trim().toLowerCase());
 const TZ = 'Europe/Berlin';
 const cors = {
   'Access-Control-Allow-Origin': '*',

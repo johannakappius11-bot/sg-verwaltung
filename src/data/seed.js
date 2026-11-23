@@ -4,8 +4,8 @@
 
 export const seed = {
   fields: [
-    { key: 'S', name: 'Sportplatz Schamede', short_name: 'Schamede', address: 'Am Sportplatz, 33165 Lichtenau-Schamede (Platzhalter)', sort: 1 },
-    { key: 'T', name: 'Sportplatz Thüle', short_name: 'Thüle', address: 'Sportplatzweg, 33154 Salzkotten-Thüle (Platzhalter)', sort: 2 },
+    { key: 'S', name: 'Sportplatz Scharmede', short_name: 'Scharmede', address: 'Am Sportplatz, 33154 Salzkotten-Scharmede (Platzhalter)', color: '#2e7d32', sort: 1 },
+    { key: 'T', name: 'Sportplatz Thüle', short_name: 'Thüle', address: 'Sportplatzweg, 33154 Salzkotten-Thüle (Platzhalter)', color: '#c62828', sort: 2 },
   ],
   teams: [
     { key: 'H1', name: '1. Herren', short_name: '1. H', category: 'Senioren', home: 'S' },
@@ -35,7 +35,7 @@ export const seed = {
     { key: 'p11', name: 'Nina Exempel', phone: '0170 1234511', email: null, consent: true },
     { key: 'p12', name: 'Peter Annahme', phone: '0170 1234512', email: null, consent: true },
     { key: 'p13', name: 'Laura Skizze', phone: '0170 1234513', email: null, consent: false },
-    { key: 'v1', name: 'Hubert Vorsitz', phone: '05292 1001', email: 'vorstand@schamede.example', consent: true },
+    { key: 'v1', name: 'Hubert Vorsitz', phone: '05292 1001', email: 'vorstand@scharmede.example', consent: true },
     { key: 'v2', name: 'Gerd Vorstand', phone: '05258 2002', email: 'vorstand@thuele.example', consent: true },
     { key: 'v3', name: 'Monika Kasse', phone: '05292 1003', email: null, consent: true },
     { key: 'v4', name: 'Frank Jugendleiter', phone: '0171 9900404', email: 'jugend@sg.example', consent: true },
@@ -56,10 +56,10 @@ export const seed = {
     ['BAM', 'p13', 'Trainerin', true],
   ],
   board: [
-    ['v1', '1. Vorsitzender', 'SC Concordia Schamede', 'Gesamtleitung, Platz Schamede', 1],
+    ['v1', '1. Vorsitzender', 'SC Concordia Scharmede', 'Gesamtleitung, Platz Scharmede', 1],
     ['v2', '1. Vorsitzender', 'VfL Thüle', 'Gesamtleitung, Platz Thüle', 2],
-    ['v3', 'Kassiererin', 'SC Concordia Schamede', 'Finanzen, Mitgliedsbeiträge', 3],
-    ['v4', 'Jugendleiter', 'SG Schamede/Thüle', 'Jugendabteilung, Platzbelegung Jugend', 4],
+    ['v3', 'Kassiererin', 'SC Concordia Scharmede', 'Finanzen, Mitgliedsbeiträge', 3],
+    ['v4', 'Jugendleiter', 'SG Scharmede/Thüle', 'Jugendabteilung, Platzbelegung Jugend', 4],
     ['v5', 'Geschäftsführer', 'VfL Thüle', 'Spielbetrieb, Passwesen', 5],
   ],
   // [team, field, weekday (1=Mo … 7=So), start, end]

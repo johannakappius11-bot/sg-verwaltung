@@ -1,5 +1,5 @@
 -- =====================================================================
---  Platzplan SG Schamede/Thüle – Datenbankschema für Supabase
+--  Platzplan SG Scharmede/Thüle – Datenbankschema für Supabase
 --  Einmalig im Supabase-Dashboard unter "SQL Editor" ausführen.
 --  Danach optional seed.sql (Testdaten) ausführen.
 -- =====================================================================
@@ -9,11 +9,13 @@
 -- Sportplätze
 create table if not exists public.fields (
   id          uuid primary key default gen_random_uuid(),
-  name        text not null,              -- z. B. "Sportplatz Schamede"
-  short_name  text not null,              -- z. B. "Schamede" (für Umschalter)
+  name        text not null,              -- z. B. "Sportplatz Scharmede"
+  short_name  text not null,              -- z. B. "Scharmede" (für Umschalter)
   address     text,
+  color       text,                       -- Farbe im Plan, z. B. "#2e7d32"
   sort        int  not null default 0
 );
+alter table public.fields add column if not exists color text;
 
 -- Personen (Trainer, Betreuer, Vorstand). Können, müssen aber kein Login haben.
 create table if not exists public.people (
@@ -57,7 +59,7 @@ create table if not exists public.board_members (
   id              uuid primary key default gen_random_uuid(),
   person_id       uuid not null references public.people(id) on delete cascade,
   position        text not null,          -- "1. Vorsitzender"
-  club            text,                   -- "SC Concordia Schamede" / "VfL Thüle" / "SG"
+  club            text,                   -- "SC Concordia Scharmede" / "VfL Thüle" / "SG"
   responsibility  text,                   -- "Platzbelegung, Jugend"
   sort            int not null default 0
 );

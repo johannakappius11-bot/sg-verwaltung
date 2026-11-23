@@ -1,6 +1,7 @@
 // Globaler App-Zustand: angemeldeter Nutzer und Stammdaten
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from './data/api.js';
+import { AWAY_COLOR, fieldColor } from './lib/colors.js';
 
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
@@ -55,6 +56,9 @@ export function AppProvider({ children }) {
   const value = useMemo(() => {
     const byId = (arr) => Object.fromEntries(arr.map((x) => [x.id, x]));
     const teamById = byId(data.teams); const fieldById = byId(data.fields); const personById = byId(data.people);
+    const fieldIndex = Object.fromEntries(data.fields.map((f, i) => [f.id, i]));
+    // Farbe eines Termins: Platzfarbe, auswärts grau
+    const colorOf = (o) => (o.isAway || !o.fieldId ? AWAY_COLOR : fieldColor(fieldById[o.fieldId], fieldIndex[o.fieldId]));
     const role = me?.role || 'none';
     const contactsForTeam = (teamId) => data.contacts
       .filter((c) => c.team_id === teamId)
@@ -65,7 +69,7 @@ export function AppProvider({ children }) {
     const editableTeams = data.teams.filter((t) => canEditTeam(t.id));
     return {
       user, me, role, data, photos, toastMsg, loadError,
-      teamById, fieldById, personById, contactsForTeam, canEditTeam, editableTeams,
+      teamById, fieldById, personById, colorOf, contactsForTeam, canEditTeam, editableTeams,
       isAdmin: role === 'admin', canManage: role === 'admin' || (role === 'trainer' && editableTeams.length > 0),
       toast, reloadData, reloadMe: () => reloadMe(user),
       refreshPhotos: () => api.photoUrls(data.people.map((p) => p.photo_path)).then(setPhotos),

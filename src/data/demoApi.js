@@ -4,7 +4,7 @@
 import { seed } from './seed.js';
 import { addDays, startOfWeek, combine, ymd } from '../lib/dates.js';
 
-const STORE_KEY = 'platzplan-demo-v1';
+const STORE_KEY = 'platzplan-demo-v2';
 const USER_KEY = 'platzplan-demo-user';
 let counter = 0;
 const newId = () => `d${Date.now().toString(36)}${(counter++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -17,7 +17,7 @@ function buildDb() {
     return new Date(d.getTime() + addMin * 60000).toISOString();
   };
   const db = {
-    fields: seed.fields.map((f) => ({ id: id('f' + f.key), name: f.name, short_name: f.short_name, address: f.address, sort: f.sort })),
+    fields: seed.fields.map((f) => ({ id: id('f' + f.key), name: f.name, short_name: f.short_name, address: f.address, color: f.color, sort: f.sort })),
     people: seed.people.map((p) => ({ id: id(p.key), user_id: null, name: p.name, phone: p.phone, email: p.email, photo_path: null, consent: p.consent, consent_at: p.consent ? new Date().toISOString() : null })),
     teams: seed.teams.map((t, i) => ({ id: id('t' + t.key), name: t.name, short_name: t.short_name, category: t.category, home_field_id: id('f' + t.home), fussballde_widget_id: null, ical_url: null, active: true, sort: i + 1 })),
     team_contacts: seed.contacts.map(([t, p, role, prim], i) => ({ id: id('tc' + i), team_id: id('t' + t), person_id: id(p), role, is_primary: prim, sort: i })),

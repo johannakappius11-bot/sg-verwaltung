@@ -237,7 +237,7 @@ a.list-item:active, li.list-item[onclick]:active { background: var(--surface-2);
 
 /* ---------- Wochenplan ---------- */
 .plan { padding-top: 12px; }
-.plan-controls { display: grid; gap: 6px; margin-bottom: 8px; }
+.plan-controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-bottom: 8px; }
 .week-nav { display: flex; align-items: center; justify-content: space-between; }
 .week-label { text-align: center; flex: 1; font-size: .98rem; }
 .day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -259,17 +259,6 @@ a.list-item:active, li.list-item[onclick]:active { background: var(--surface-2);
 .cal-tag .cal-day-head { display: none; }
 .cal-tag .cal-head { display: none; }
 .cal-axis-head { display: flex; align-items: center; justify-content: center; font-size: .65rem; }
-.cal-away { border-bottom: 1px solid var(--line); background: var(--surface-2); }
-.cal-away-cell { padding: 3px 1px; display: grid; gap: 3px; align-content: start; min-height: 30px; border-left: 1px solid var(--line); }
-.away-chip {
-  display: flex; flex-direction: column; align-items: stretch; text-align: left; width: 100%; min-height: 40px;
-  border: 1px dashed var(--training-edge); background: var(--surface); border-radius: 6px; padding: 2px 3px; cursor: pointer; overflow: hidden;
-}
-.away-tag { font-size: .6rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); font-weight: 700; }
-.away-team { font-size: .72rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cal-tag .away-chip { flex-direction: row; gap: 8px; align-items: center; padding: 6px 10px; }
-.cal-tag .away-tag { font-size: .72rem; } .cal-tag .away-team { font-size: .9rem; white-space: normal; }
-
 .cal-body { position: relative; height: calc(var(--hours) * 60 * var(--ppm)); }
 .cal-axis { position: relative; }
 .cal-hour { height: calc(60 * var(--ppm)); position: relative; font-size: .68rem; color: var(--muted); }
@@ -283,36 +272,67 @@ a.list-item:active, li.list-item[onclick]:active { background: var(--surface-2);
 .now-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--warn-edge); z-index: 3; pointer-events: none; }
 .now-line::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--warn-edge); }
 
+/* Kalenderblöcke: Farbe (--c) = Ort, Form = Art */
 .block {
   position: absolute; z-index: 2; margin: 1px; overflow: hidden; text-align: left; cursor: pointer;
-  display: flex; flex-direction: column; gap: 0; padding: 2px 3px; border-radius: 5px; border: 0;
-  background: var(--training-bg); color: var(--text); border-left: 3px solid var(--training-edge);
-  min-height: 22px; line-height: 1.15;
+  display: flex; flex-direction: column; gap: 0; padding: 2px 3px 2px 4px; border-radius: 5px; border: 0;
+  min-height: 22px; line-height: 1.15; color: var(--text);
+  /* Training: helle Fläche mit kräftigem Farbstreifen links */
+  background: var(--ct); border-left: 4px solid var(--c);
 }
 .block:active { filter: brightness(.92); }
-.block-team { font-weight: 700; font-size: .7rem; overflow-wrap: anywhere; }
+.block-team { font-weight: 700; font-size: .7rem; overflow-wrap: anywhere; display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
 .block-time { font-size: .62rem; opacity: .85; }
-.block-kind { font-size: .8rem; opacity: .9; }
+.block-kind { font-size: .8rem; opacity: .95; }
 .cal-tag .block { padding: 4px 8px; }
-.cal-tag .block-team { font-size: .95rem; }
+.cal-tag .block-team { font-size: .95rem; gap: 5px; }
 .cal-tag .block-time { font-size: .85rem; }
-.block-spiel { background: var(--spiel-bg); color: var(--spiel-text); border-left-color: var(--spiel-bg); }
-.block-sonstiges { background: repeating-linear-gradient(135deg, var(--sonst-bg) 0 6px, var(--training-bg) 6px 12px); border-left-color: var(--training-edge); }
-.block.conflict { outline: 2px dashed var(--warn-edge); outline-offset: -2px; }
+/* Spiel: komplett ausgefüllt, weiße Schrift, Ball-Symbol */
+.block.kind-spiel { background: var(--c); color: #fff; border-left-color: rgba(0, 0, 0, .28); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+.block.kind-spiel .ball { color: var(--c); flex: none; }
+/* Sonstiges: schraffiert */
+.block.kind-sonstiges { background: repeating-linear-gradient(135deg, var(--ct) 0 5px, transparent 5px 10px), var(--surface); }
+.block.conflict { outline: 2px dashed var(--text); outline-offset: -2px; }
 .block-warn {
-  position: absolute; top: 1px; right: 1px; width: 14px; height: 14px; border-radius: 50%;
-  background: var(--warn-edge); color: #fff; font-size: .65rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  position: absolute; top: 1px; right: 1px; width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #fff;
+  background: var(--warn-edge); color: #fff; font-size: .62rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
 }
-.block.cancelled { opacity: .55; background: repeating-linear-gradient(45deg, transparent 0 5px, var(--line) 5px 7px); color: var(--muted); border-left-color: var(--line); }
+.block.cancelled { opacity: .6; background: repeating-linear-gradient(45deg, transparent 0 5px, var(--line) 5px 7px), var(--surface); color: var(--muted); }
 .block.cancelled .block-team { text-decoration: line-through; }
+.cal-empty { text-align: center; color: var(--muted); font-size: .9rem; margin: 0; padding: 10px; border-top: 1px solid var(--line); }
 
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin: 12px 0 4px; font-size: .8rem; color: var(--muted); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
-.sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
-.sw-training { background: var(--training-bg); border-left: 3px solid var(--training-edge); }
-.sw-spiel { background: var(--spiel-bg); }
-.sw-sonstiges { background: repeating-linear-gradient(135deg, var(--sonst-bg) 0 3px, var(--training-bg) 3px 6px); }
-.sw-conflict { border: 2px dashed var(--warn-edge); }
+.sw { --c: var(--muted); --ct: var(--surface-2); display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 14px; border-radius: 3px; }
+.sw-training { background: var(--ct); border-left: 4px solid var(--c); }
+.sw-spiel { background: var(--c); }
+.sw-spiel .ball { color: var(--c); }
+.sw-sonstiges { background: repeating-linear-gradient(135deg, var(--line) 0 3px, transparent 3px 6px); border: 1px solid var(--line); }
+.sw-conflict { border: 2px dashed var(--text); }
+
+/* Orts-Chips (zugleich Legende und Filter) */
+.filter-row { display: flex; gap: 8px; align-items: center; }
+.place-chips { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+.place-chips::-webkit-scrollbar { display: none; }
+.chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.place-chip, .chip {
+  display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 40px; padding: 6px 12px;
+  border-radius: 20px; border: 1.5px solid var(--line); background: var(--surface); color: var(--muted);
+  cursor: pointer; font-size: .9rem; white-space: nowrap;
+}
+.place-chip.on { border-color: var(--c); background: var(--ct); color: var(--text); font-weight: 600; }
+.place-chip:not(.on) .dot { background: transparent; box-shadow: inset 0 0 0 2px var(--c); }
+.place-chip:not(.on) { text-decoration: line-through; }
+.chip.on { background: var(--primary); color: var(--primary-text); border-color: var(--primary); font-weight: 600; }
+.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--c); flex: none; }
+.dot-lg { width: 16px; height: 16px; margin-right: 8px; vertical-align: -1px; }
+.filter-btn { flex: none; padding: 6px 10px; }
+.place-chips .place-chip { min-height: 38px; padding: 5px 10px; font-size: .85rem; gap: 5px; }
+@media (max-width: 400px) { .filter-btn .lbl { display: none; } }
+.filter-btn.active { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+.filter-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .85rem; background: var(--surface-2); border-radius: 10px; padding: 0 4px 0 12px; }
+.filter-summary .link-btn { padding: 8px; min-height: 40px; }
+.team-group { margin-top: 10px; }
 
 /* fussball.de-Widget */
 .widget-consent { background: var(--surface-2); padding: 14px; border-radius: var(--radius); }

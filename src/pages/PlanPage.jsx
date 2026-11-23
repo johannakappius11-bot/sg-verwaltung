@@ -1,32 +1,52 @@
+// Platzplan: eine gemeinsame Wochen-/Tagesansicht für alle Plätze.
+// Farbe = Ort (Platzfarbe, Auswärts grau). Form = Art: Training hell mit Farbstreifen,
+// Spiel kräftig ausgefüllt mit Ball-Symbol, Sonstiges schraffiert.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { config } from '../config.js';
 import { api } from '../data/api.js';
 import { useApp } from '../store.jsx';
 import { addDays, fmtDate, fmtDateLong, hm, isoWeekday, sameDay, startOfWeek, weekLabel, WEEKDAYS, ymd } from '../lib/dates.js';
 import { buildOccurrences, conflictKeys, KIND_LABEL, layoutLanes } from '../lib/schedule.js';
+import { AWAY_COLOR, tint } from '../lib/colors.js';
 import { Icon, PersonCard, Sheet } from '../components/ui.jsx';
 import EventForm from '../components/EventForm.jsx';
 import { alertDialog, confirmDialog, promptDialog } from '../components/dialog.jsx';
 
-const FIELD_KEY = 'platzplan-field';
 const VIEW_KEY = 'platzplan-view';
-const store = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* */ } } };
+const FILTER_KEY = 'platzplan-filter';
+const store = {
+  get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* */ } },
+};
+const EMPTY_FILTER = { hiddenPlaces: [], kinds: [], teams: [] }; // kinds/teams leer = alle
+const loadFilter = () => { try { return { ...EMPTY_FILTER, ...JSON.parse(store.get(FILTER_KEY) || '{}') }; } catch { return EMPTY_FILTER; } };
+
+export const placeOf = (o) => (o.isAway ? 'away' : o.fieldId || 'none');
+
+export function Ball({ size = 11 }) {
+  return (
+    <svg className="ball" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill="#fff" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 7l4 3-1.5 4.5h-5L8 10z" fill="currentColor" />
+    </svg>
+  );
+}
 
 export default function PlanPage() {
-  const { data, teamById, canManage, editableTeams } = useApp();
+  const { data, teamById, canManage, editableTeams, colorOf, me } = useApp();
   const [monday, setMonday] = useState(() => startOfWeek(new Date()));
-  const [fieldId, setFieldId] = useState(() => store.get(FIELD_KEY));
   const [view, setView] = useState(() => store.get(VIEW_KEY) || 'woche');
   const [day, setDay] = useState(() => isoWeekday(new Date()));
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filter, setFilter] = useState(loadFilter);
   const [error, setError] = useState('');
 
-  const field = data.fields.find((f) => f.id === fieldId) || data.fields[0];
-  useEffect(() => { if (field) store.set(FIELD_KEY, field.id); }, [field?.id]); // eslint-disable-line
   useEffect(() => { store.set(VIEW_KEY, view); }, [view]);
+  useEffect(() => { store.set(FILTER_KEY, JSON.stringify(filter)); }, [filter]);
 
   const from = monday; const to = useMemo(() => addDays(monday, 7), [monday]);
   const loadEvents = useCallback(async () => {
@@ -41,17 +61,18 @@ export default function PlanPage() {
 
   const all = useMemo(() => buildOccurrences({ series: data.series, exceptions: data.exceptions, events, from, to }), [data.series, data.exceptions, events, from, to]);
   const conflicts = useMemo(() => conflictKeys(all), [all]);
-  const onField = all.filter((o) => !o.isAway && o.fieldId === field?.id);
-  const away = all.filter((o) => o.isAway);
+  const shown = all.filter((o) => !filter.hiddenPlaces.includes(placeOf(o))
+    && (!filter.kinds.length || filter.kinds.includes(o.kind))
+    && (!filter.teams.length || filter.teams.includes(o.teamId)));
 
   const days = [...Array(7)].map((_, i) => addDays(monday, i));
   const shownDays = view === 'tag' ? [days[day - 1]] : days;
   const isThisWeek = sameDay(monday, startOfWeek(new Date()));
 
-  // Sichtbarer Zeitbereich: passt sich an die Termine an (weniger Scrollen)
-  const visible = onField.filter((o) => shownDays.some((d) => sameDay(o.start, d)));
+  // Sichtbarer Zeitbereich passt sich an die Termine an (weniger Scrollen)
+  const visible = shown.filter((o) => shownDays.some((d) => sameDay(o.start, d)));
   let startH = visible.length ? Math.min(...visible.map((o) => o.start.getHours())) : config.dayStartHour;
-  let endH = visible.length ? Math.max(...visible.map((o) => o.end.getHours() + (o.end.getMinutes() ? 1 : 0))) : config.dayEndHour;
+  let endH = visible.length ? Math.max(...visible.map((o) => (sameDay(o.start, o.end) ? o.end.getHours() + (o.end.getMinutes() ? 1 : 0) : 24))) : config.dayEndHour;
   if (endH - startH < 5) { startH = Math.max(0, Math.min(startH, endH - 5)); endH = Math.max(endH, startH + 5); }
 
   const shift = (dir) => {
@@ -71,16 +92,39 @@ export default function PlanPage() {
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
   };
 
-  if (!data.fields.length) return <div className="page"><p className="empty">Noch keine Plätze angelegt.</p></div>;
+  const places = [...data.fields.map((f) => ({ key: f.id, label: f.short_name, color: colorOf({ fieldId: f.id }) })), { key: 'away', label: 'Auswärts', color: AWAY_COLOR }];
+  const togglePlace = (k) => setFilter((f) => ({ ...f, hiddenPlaces: f.hiddenPlaces.includes(k) ? f.hiddenPlaces.filter((x) => x !== k) : [...f.hiddenPlaces, k] }));
+  const extraCount = (filter.kinds.length ? 1 : 0) + (filter.teams.length ? 1 : 0);
+  const summary = [
+    filter.kinds.length ? filter.kinds.map((k) => KIND_LABEL[k]).join(' + ') : null,
+    filter.teams.length ? (filter.teams.length === 1 ? teamById[filter.teams[0]]?.name : `${filter.teams.length} Mannschaften`) : null,
+  ].filter(Boolean).join(' · ');
 
   return (
     <div className="plan">
       <div className="plan-controls">
-        <div className="seg seg-lg" role="tablist" aria-label="Platz wählen">
-          {data.fields.map((f) => (
-            <button key={f.id} role="tab" aria-selected={f.id === field.id} className={f.id === field.id ? 'on' : ''} onClick={() => setFieldId(f.id)}>{f.short_name}</button>
-          ))}
+        <div className="filter-row">
+          <div className="place-chips" role="group" aria-label="Orte ein- und ausblenden">
+            {places.map((p) => {
+              const on = !filter.hiddenPlaces.includes(p.key);
+              return (
+                <button key={p.key} className={`place-chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => togglePlace(p.key)}
+                  style={{ '--c': p.color, '--ct': tint(p.color, 0.14) }}>
+                  <i className="dot" />{p.label}
+                </button>
+              );
+            })}
+          </div>
+          <button className={`btn btn-sm filter-btn ${extraCount ? 'active' : ''}`} aria-label="Filter" onClick={() => setFilterOpen(true)}>
+            <Icon name="filter" size={18} /><span className="lbl">Filter</span>{extraCount ? ` (${extraCount})` : ''}
+          </button>
         </div>
+        {summary && (
+          <div className="filter-summary">
+            <span>Gefiltert: <strong>{summary}</strong></span>
+            <button className="link-btn" onClick={() => setFilter((f) => ({ ...f, kinds: [], teams: [] }))}>Aufheben</button>
+          </div>
+        )}
         <div className="week-nav">
           <button className="icon-btn" onClick={() => shift(-1)} aria-label={view === 'tag' ? 'Vorheriger Tag' : 'Vorherige Woche'}><Icon name="left" /></button>
           <div className="week-label">
@@ -96,7 +140,7 @@ export default function PlanPage() {
           </div>
           {(!isThisWeek || (view === 'tag' && day !== isoWeekday(new Date()))) && <button className="btn btn-sm" onClick={today}>Heute</button>}
           {canManage && editableTeams.length > 0 && (
-            <button className="btn btn-sm btn-primary" onClick={() => setForm({ defaults: { field_id: field.id, date: ymd(view === 'tag' ? days[day - 1] : (isThisWeek ? new Date() : monday)) } })}>
+            <button className="btn btn-sm btn-primary" onClick={() => setForm({ defaults: { date: ymd(view === 'tag' ? days[day - 1] : (isThisWeek ? new Date() : monday)) } })}>
               <Icon name="plus" size={18} /> Termin
             </button>
           )}
@@ -124,41 +168,28 @@ export default function PlanPage() {
               </div>
             ))}
           </div>
-          {away.length > 0 && (
-            <div className="cal-away">
-              <div className="cal-axis-head" />
-              {shownDays.map((d) => (
-                <div key={ymd(d)} className="cal-away-cell">
-                  {away.filter((o) => sameDay(o.start, d)).map((o) => (
-                    <button key={o.key} className="away-chip" onClick={() => setSelected(o)}>
-                      <span className="away-tag">{view === 'tag' ? 'Auswärts' : <><span className="hide-xs">Auswärts</span><span className="show-xs">Ausw.</span></>}</span>
-                      <span className="away-team">{teamById[o.teamId]?.short_name}{view === 'tag' ? ` · ${hm(o.start)} · bei ${o.opponent || '?'}` : ''}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
           <div className="cal-body" style={{ '--hours': endH - startH }}>
             <div className="cal-axis">
               {[...Array(endH - startH)].map((_, i) => <div key={i} className="cal-hour"><span>{startH + i}</span></div>)}
             </div>
             {shownDays.map((d) => (
-              <DayColumn key={ymd(d)} day={d} items={onField.filter((o) => sameDay(o.start, d))} startH={startH}
+              <DayColumn key={ymd(d)} day={d} items={shown.filter((o) => sameDay(o.start, d))} startH={startH}
                 conflicts={conflicts} onSelect={setSelected} wide={view === 'tag'} />
             ))}
           </div>
         </div>
+        {!loading && !visible.length && <p className="cal-empty">Keine Termine{shown.length !== all.length ? ' für diese Filterauswahl' : ''} {view === 'tag' ? 'an diesem Tag' : 'in dieser Woche'}.</p>}
       </div>
 
-      <div className="legend">
+      <div className="legend" aria-label="Legende">
         <span><i className="sw sw-training" /> Training</span>
-        <span><i className="sw sw-spiel" /> Heimspiel</span>
+        <span><i className="sw sw-spiel"><Ball size={9} /></i> Spiel</span>
         <span><i className="sw sw-sonstiges" /> Sonstiges</span>
         <span><i className="sw sw-conflict" /> Doppelt belegt</span>
       </div>
-      <p className="muted small center">Tipp: Zum Blättern nach links/rechts wischen. Termin antippen für Details.</p>
+      <p className="muted small center">Farbe = Ort ({places.map((p) => p.label).join(', ')}). Wischen zum Blättern, Termin antippen für Details.</p>
 
+      {filterOpen && <FilterSheet filter={filter} setFilter={setFilter} places={places} myTeamIds={me?.teamIds || []} onClose={() => setFilterOpen(false)} />}
       {selected && <DetailSheet item={selected} conflict={conflicts.has(selected.key)} onClose={() => setSelected(null)}
         onEdit={(init) => { setSelected(null); setForm(init); }} onChanged={() => { setSelected(null); loadEvents(); }} />}
       {form && <EventForm initial={form} onClose={() => setForm(null)} onSaved={loadEvents} />}
@@ -166,8 +197,68 @@ export default function PlanPage() {
   );
 }
 
+function FilterSheet({ filter, setFilter, places, myTeamIds, onClose }) {
+  const { data } = useApp();
+  const teams = data.teams.filter((t) => t.active);
+  const groups = [...new Set(teams.map((t) => t.category || 'Weitere'))];
+  const toggle = (key, v) => setFilter((f) => ({ ...f, [key]: f[key].includes(v) ? f[key].filter((x) => x !== v) : [...f[key], v] }));
+  const placeOn = (k) => !filter.hiddenPlaces.includes(k);
+  return (
+    <Sheet title="Filter" onClose={onClose} footer={
+      <div className="row gap">
+        <button className="btn" onClick={() => setFilter(EMPTY_FILTER)}>Alles zeigen</button>
+        <button className="btn btn-primary grow" onClick={onClose}>Fertig</button>
+      </div>
+    }>
+      <div className="form">
+        <div>
+          <div className="field-label">Ort</div>
+          <div className="chip-wrap">
+            {places.map((p) => (
+              <button key={p.key} className={`place-chip ${placeOn(p.key) ? 'on' : ''}`} aria-pressed={placeOn(p.key)}
+                style={{ '--c': p.color, '--ct': tint(p.color, 0.14) }}
+                onClick={() => toggle('hiddenPlaces', p.key)}><i className="dot" />{p.label}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="field-label">Art</div>
+          <div className="chip-wrap">
+            {Object.entries(KIND_LABEL).map(([k, l]) => {
+              const on = filter.kinds.includes(k);
+              return <button key={k} className={`chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => toggle('kinds', k)}>{l}</button>;
+            })}
+          </div>
+          <p className="muted small">Nichts gewählt = alle Arten.</p>
+        </div>
+        <div>
+          <div className="row between">
+            <div className="field-label">Mannschaften</div>
+            <div className="row gap-s">
+              {myTeamIds.length > 0 && <button className="link-btn" onClick={() => setFilter((f) => ({ ...f, teams: myTeamIds }))}>Meine</button>}
+              <button className="link-btn" onClick={() => setFilter((f) => ({ ...f, teams: [] }))}>Alle</button>
+            </div>
+          </div>
+          {groups.map((g) => (
+            <div key={g} className="team-group">
+              <div className="muted small">{g}</div>
+              <div className="chip-wrap">
+                {teams.filter((t) => (t.category || 'Weitere') === g).map((t) => {
+                  const on = filter.teams.includes(t.id);
+                  return <button key={t.id} className={`chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => toggle('teams', t.id)}>{t.name}</button>;
+                })}
+              </div>
+            </div>
+          ))}
+          <p className="muted small">Nichts gewählt = alle Mannschaften.</p>
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+
 function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
-  const { teamById } = useApp();
+  const { teamById, colorOf, fieldById } = useApp();
   const now = new Date();
   const nowTop = sameDay(day, now) ? (now.getHours() - startH) * 60 + now.getMinutes() : null;
   return (
@@ -175,20 +266,25 @@ function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
       {nowTop !== null && nowTop > 0 && <div className="now-line" style={{ top: `calc(${nowTop} * var(--ppm))` }} />}
       {layoutLanes(items).map(({ item: o, lane, lanes }) => {
         const top = (o.start.getHours() - startH) * 60 + o.start.getMinutes();
-        const len = (o.end - o.start) / 60000;
+        const len = (Math.min(o.end, addDays(day, 1)) - o.start) / 60000;
         const team = teamById[o.teamId];
         const conflict = conflicts.has(o.key);
+        const color = colorOf(o);
         const label = o.kind === 'sonstiges' && o.title ? o.title : team?.[wide ? 'name' : 'short_name'] || '–';
+        const where = o.isAway ? 'Auswärts' : fieldById[o.fieldId]?.short_name || '';
+        const detail = o.cancelled ? 'fällt aus'
+          : o.kind === 'spiel' ? (o.isAway ? `Auswärts bei ${o.opponent || '?'}` : `Heimspiel gegen ${o.opponent || '?'} · ${where}`)
+            : `${KIND_LABEL[o.kind]} · ${where}`;
         return (
           <button key={o.key}
-            className={`block block-${o.kind} ${conflict ? 'conflict' : ''} ${o.cancelled ? 'cancelled' : ''}`}
-            style={{ top: `calc(${top} * var(--ppm))`, height: `calc(${len} * var(--ppm) - 2px)`, left: `calc(${lane} * 100% / ${lanes})`, width: `calc(100% / ${lanes} - 2px)` }}
+            className={`block kind-${o.kind} ${o.isAway ? 'is-away' : ''} ${conflict ? 'conflict' : ''} ${o.cancelled ? 'cancelled' : ''}`}
+            style={{ '--c': color, '--ct': tint(color, 0.2), top: `calc(${top} * var(--ppm))`, height: `calc(${len} * var(--ppm) - 2px)`, left: `calc(${lane} * 100% / ${lanes})`, width: `calc(100% / ${lanes} - 2px)` }}
             onClick={() => onSelect(o)}
-            aria-label={`${team?.name || ''}, ${KIND_LABEL[o.kind]}, ${hm(o.start)} bis ${hm(o.end)}${o.cancelled ? ', fällt aus' : ''}${conflict ? ', Doppelbelegung' : ''}`}>
+            aria-label={`${team?.name || ''}, ${detail}, ${hm(o.start)} bis ${hm(o.end)}${conflict ? ', Doppelbelegung' : ''}`}>
             {conflict && <span className="block-warn" aria-hidden="true">!</span>}
-            <span className="block-team">{label}</span>
+            <span className="block-team">{o.kind === 'spiel' && <Ball />}{label}</span>
             {(wide || lanes < 3) && <span className="block-time">{hm(o.start)}{wide ? `–${hm(o.end)}` : ''}</span>}
-            {wide && <span className="block-kind">{o.cancelled ? 'fällt aus' : o.kind === 'spiel' ? `Spiel gegen ${o.opponent || '?'}` : KIND_LABEL[o.kind]}</span>}
+            {wide && <span className="block-kind">{detail}</span>}
           </button>
         );
       })}
@@ -197,7 +293,7 @@ function DayColumn({ day, items, startH, conflicts, onSelect, wide }) {
 }
 
 function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
-  const { teamById, fieldById, contactsForTeam, canEditTeam, data, reloadData, toast } = useApp();
+  const { teamById, fieldById, contactsForTeam, canEditTeam, data, reloadData, toast, colorOf } = useApp();
   const team = teamById[o.teamId];
   const contacts = contactsForTeam(o.teamId);
   const canEdit = canEditTeam(o.teamId);
@@ -215,7 +311,7 @@ function DetailSheet({ item: o, conflict, onClose, onEdit, onChanged }) {
   return (
     <Sheet title={title} onClose={onClose}>
       <div className="detail">
-        <div className="detail-team">{team?.name || 'Unbekannte Mannschaft'}</div>
+        <div className="detail-team"><i className="dot dot-lg" style={{ '--c': colorOf(o) }} />{team?.name || 'Unbekannte Mannschaft'}</div>
         {o.cancelled && <div className="alert alert-warn">Dieser Termin fällt aus{o.cancelReason ? `: ${o.cancelReason}` : '.'}</div>}
         {conflict && <div className="alert alert-warn"><Icon name="warn" /> Doppelbelegung: Zu dieser Zeit ist der Platz mehrfach belegt.</div>}
         <dl className="dl">

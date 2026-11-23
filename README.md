@@ -1,8 +1,9 @@
-# Platzplan SG Schamede/Thüle
+# Platzplan SG Scharmede/Thüle
 
-Web-App (PWA) für **SC Concordia Schamede** und **VfL Thüle**: Wer trainiert oder spielt wann auf welchem Platz – und wen kann man ansprechen?
+Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert oder spielt wann auf welchem Platz – und wen kann man ansprechen?
 
-- 📅 **Wochenplan pro Platz** (Schamede / Thüle umschalten), Wochen- und Tagesansicht, Wischen zum Blättern
+- 📅 **Gemeinsamer Wochenplan** für beide Plätze, farbig nach Ort (Scharmede grün, Thüle rot, auswärts grau), Wochen- und Tagesansicht, Wischen zum Blättern
+- 🔎 **Filter** nach Ort, Art (Training/Spiel/Sonstiges) und Mannschaft. Training = helle Fläche mit Farbstreifen, Spiel = kräftig ausgefüllt mit Ball-Symbol
 - ⚽ **Spiele**: Heimspiele belegen den Platz, Auswärtsspiele stehen als „Auswärts" mit Gegner und Spielort im Plan
 - 👥 **Mannschaften** mit Trainern/Betreuern, **Vorstand** mit Zuständigkeiten
 - 🔐 **Anmeldung ohne Passwort** (E-Mail-Link oder 6-stelliger Code), Zugang nur per **Einladungslink**
@@ -48,7 +49,8 @@ Dann im Browser `http://localhost:5173` öffnen. Im selben WLAN kann man auch mi
 **Online** geht es ebenso: Die App wie in [Schritt 3.4](#34-app-veröffentlichen) veröffentlichen, aber **ohne** die beiden Supabase-Werte – dann läuft sie online im Demo-Modus.
 
 Ideen zum Ausprobieren:
-- Platz „Thüle" wählen → mittwochs überschneiden sich D-Jugend und E1 (orange gestrichelt = Doppelbelegung).
+- Mittwochs überschneiden sich auf dem Platz Thüle D-Jugend und E1 (gestrichelt mit „!“ = Doppelbelegung).
+- Oben die Orte antippen, um sie aus- oder einzublenden; unter „Filter“ nach Art und Mannschaft filtern.
 - Einen Termin antippen → Details und Ansprechpartner. Stefan Platzhalter (2. Herren) hat *nicht* eingewilligt → nur Name sichtbar.
 - Als „Trainerin (D-Jugend)" kann man nur Termine der D-Jugend anlegen.
 - Verwalten → Spiele & Import → CSV-Vorlage herunterladen und wieder importieren.
@@ -76,7 +78,7 @@ Handy (Browser/App)  ──►  App-Dateien (Cloudflare Pages oder Vereins-Websp
 
 | Tabelle | Inhalt |
 |---|---|
-| `fields` | Plätze (Schamede, Thüle) |
+| `fields` | Plätze (Scharmede, Thüle) mit Farbe für den Plan |
 | `teams` | Mannschaften mit Heimplatz, optional fussball.de-Widget-ID und Kalender-Abo |
 | `people` | Personen (Trainer, Betreuer, Vorstand) – mit oder ohne App-Konto; Telefon/Foto/E-Mail + Einwilligung |
 | `team_contacts` | Wer ist Ansprechpartner welcher Mannschaft (Trainer, Co-Trainer, Betreuer) |
@@ -150,7 +152,7 @@ Zuerst die beiden Werte aus Supabase holen: **Project Settings → API** (bzw. �
 4. Unter **Environment variables** eintragen:
    `VITE_SUPABASE_URL` = Project URL, `VITE_SUPABASE_ANON_KEY` = anon key.
 5. **Save and Deploy**. Nach ca. 1 Minute ist die App unter `https://platzplan-xyz.pages.dev` erreichbar.
-   Eine eigene Adresse wie `platzplan.sg-schamede-thuele.de` kann man unter „Custom domains" einstellen.
+   Eine eigene Adresse wie `platzplan.sg-scharmede-thuele.de` kann man unter „Custom domains" einstellen.
 
 > Hinweis Datenschutz: Cloudflare ist ein US-Anbieter und liefert nur die App-Dateien aus (keine Mitgliederdaten).
 > Wer **ausschließlich EU-Hosting** möchte, nimmt Variante B.

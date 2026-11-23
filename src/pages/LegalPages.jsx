@@ -16,7 +16,7 @@ export function ImpressumPage() {
       <h1>Impressum</h1>
       <p className="alert alert-warn">Platzhalter – bitte mit den echten Vereinsdaten ausfüllen.</p>
       <h2>Angaben gemäß § 5 DDG</h2>
-      <p>[Spielgemeinschaft / verantwortlicher Verein, z. B. SC Concordia Schamede e. V.]<br />
+      <p>[Spielgemeinschaft / verantwortlicher Verein, z. B. SC Concordia Scharmede e. V.]<br />
         [Straße Hausnummer]<br />[PLZ Ort]</p>
       <p>Vertreten durch den Vorstand: [Name 1. Vorsitzende/r], [Name 2. Vorsitzende/r]</p>
       <p>Registergericht: [Amtsgericht …]<br />Registernummer: [VR …]</p>
@@ -41,7 +41,7 @@ export function DatenschutzPage() {
       <p>[Verein, Anschrift, E-Mail – wie im Impressum]. Bei gemeinsamer Verantwortung beider Vereine: [Vereinbarung nach Art. 26 DSGVO, Ansprechpartner].</p>
 
       <h2>2. Zweck der App</h2>
-      <p>Die App dient der Organisation der Platzbelegung der Sportplätze in Schamede und Thüle und zeigt, welche Mannschaft wann trainiert oder spielt und wer Ansprechpartner ist. Sie ist nur für eingeladene Personen zugänglich.</p>
+      <p>Die App dient der Organisation der Platzbelegung der Sportplätze in Scharmede und Thüle und zeigt, welche Mannschaft wann trainiert oder spielt und wer Ansprechpartner ist. Sie ist nur für eingeladene Personen zugänglich.</p>
 
       <h2>3. Welche Daten wir verarbeiten</h2>
       <ul>

@@ -3,15 +3,15 @@
 // =====================================================================
 export const config = {
   appName: 'Platzplan SG',
-  title: 'SG Schamede/Thüle',
-  clubs: ['SC Concordia Schamede', 'VfL Thüle'],
+  title: 'SG Scharmede/Thüle',
+  clubs: ['SC Concordia Scharmede', 'VfL Thüle'],
 
   // Logos: Dateien in den Ordner public/logos legen und hier den Dateinamen eintragen.
-  logoLeft: '/logos/schamede.svg',
+  logoLeft: '/logos/scharmede.svg',
   logoRight: '/logos/thuele.svg',
 
   // Woran erkennt der Import ein Heimspiel? (Teil des Mannschaftsnamens in fussball.de)
-  homeKeywords: ['Schamede', 'Thüle', 'Thuele'],
+  homeKeywords: ['Scharmede', 'Thüle', 'Thuele'],
 
   // Sichtbarer Zeitbereich im Wochenplan (wird bei Bedarf automatisch erweitert)
   dayStartHour: 9,

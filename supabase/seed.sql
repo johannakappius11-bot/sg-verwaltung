@@ -4,8 +4,8 @@
 do $$
 declare wk date := date_trunc('week', now() at time zone 'Europe/Berlin')::date;
 begin
-insert into public.fields (id,name,short_name,address,sort) values ('5779d01c-59c3-4347-a617-e272e4f7117b','Sportplatz Schamede','Schamede','Am Sportplatz, 33165 Lichtenau-Schamede (Platzhalter)',1) on conflict do nothing;
-insert into public.fields (id,name,short_name,address,sort) values ('972156c7-1bfb-4425-a4c8-871bf9cec34c','Sportplatz Thüle','Thüle','Sportplatzweg, 33154 Salzkotten-Thüle (Platzhalter)',2) on conflict do nothing;
+insert into public.fields (id,name,short_name,address,color,sort) values ('5779d01c-59c3-4347-a617-e272e4f7117b','Sportplatz Scharmede','Scharmede','Am Sportplatz, 33154 Salzkotten-Scharmede (Platzhalter)','#2e7d32',1) on conflict do nothing;
+insert into public.fields (id,name,short_name,address,color,sort) values ('972156c7-1bfb-4425-a4c8-871bf9cec34c','Sportplatz Thüle','Thüle','Sportplatzweg, 33154 Salzkotten-Thüle (Platzhalter)','#c62828',2) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('1f5d1395-af70-4286-a86b-64f0f3dafbbc','Markus Beispiel','0170 1234501','markus@example.org',true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('e18cc90c-cdab-4cc7-a229-3813bf56e419','Thomas Muster','0170 1234502',null,true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('21a5c137-fdb4-462c-af6f-d1835e6bbdaa','Stefan Platzhalter','0170 1234503',null,false) on conflict do nothing;
@@ -19,7 +19,7 @@ insert into public.people (id,name,phone,email,consent) values ('f12c49b2-048b-4
 insert into public.people (id,name,phone,email,consent) values ('9d1c22d8-7847-4886-adae-6adb093d12bb','Nina Exempel','0170 1234511',null,true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('9495294a-3887-4f5b-af25-ed473db027d2','Peter Annahme','0170 1234512',null,true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('a7b1e6be-9264-4018-a3db-3f083472f4d6','Laura Skizze','0170 1234513',null,false) on conflict do nothing;
-insert into public.people (id,name,phone,email,consent) values ('a7ea4415-36d1-48a5-a8e4-3358a47c9b7f','Hubert Vorsitz','05292 1001','vorstand@schamede.example',true) on conflict do nothing;
+insert into public.people (id,name,phone,email,consent) values ('a7ea4415-36d1-48a5-a8e4-3358a47c9b7f','Hubert Vorsitz','05292 1001','vorstand@scharmede.example',true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('e6e931cf-ae80-4cc0-aa8a-bd6cc1e56d18','Gerd Vorstand','05258 2002','vorstand@thuele.example',true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('fd6fb712-f48e-4091-adfc-d5f1f84cf805','Monika Kasse','05292 1003',null,true) on conflict do nothing;
 insert into public.people (id,name,phone,email,consent) values ('5224facb-9e7e-401d-adff-6c5119e720ae','Frank Jugendleiter','0171 9900404','jugend@sg.example',true) on conflict do nothing;
@@ -51,10 +51,10 @@ insert into public.team_contacts (team_id,person_id,role,is_primary,sort) values
 insert into public.team_contacts (team_id,person_id,role,is_primary,sort) values ('2bde6fa5-9bc6-4039-ae63-963901ea5113','9495294a-3887-4f5b-af25-ed473db027d2','Trainer',true,12) on conflict do nothing;
 insert into public.team_contacts (team_id,person_id,role,is_primary,sort) values ('d45145d7-fdc2-4248-a479-828dd2952ba2','9334d52a-1469-44f8-a920-99dc0a02ab73','Trainerin',true,13) on conflict do nothing;
 insert into public.team_contacts (team_id,person_id,role,is_primary,sort) values ('579ec5f2-1bae-4e83-ae52-b1aabb995813','a7b1e6be-9264-4018-a3db-3f083472f4d6','Trainerin',true,14) on conflict do nothing;
-insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('04fe9b37-e3a3-4a62-ab2d-d7da003fa93d','a7ea4415-36d1-48a5-a8e4-3358a47c9b7f','1. Vorsitzender','SC Concordia Schamede','Gesamtleitung, Platz Schamede',1) on conflict do nothing;
+insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('04fe9b37-e3a3-4a62-ab2d-d7da003fa93d','a7ea4415-36d1-48a5-a8e4-3358a47c9b7f','1. Vorsitzender','SC Concordia Scharmede','Gesamtleitung, Platz Scharmede',1) on conflict do nothing;
 insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('6c73d6d3-92f2-4fa3-a7ec-e0c12cc91a0c','e6e931cf-ae80-4cc0-aa8a-bd6cc1e56d18','1. Vorsitzender','VfL Thüle','Gesamtleitung, Platz Thüle',2) on conflict do nothing;
-insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('a9674eee-cc64-4ca7-abe3-d9167b52041c','fd6fb712-f48e-4091-adfc-d5f1f84cf805','Kassiererin','SC Concordia Schamede','Finanzen, Mitgliedsbeiträge',3) on conflict do nothing;
-insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('dfb0edde-ad30-4c95-a169-63dc020bea8c','5224facb-9e7e-401d-adff-6c5119e720ae','Jugendleiter','SG Schamede/Thüle','Jugendabteilung, Platzbelegung Jugend',4) on conflict do nothing;
+insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('a9674eee-cc64-4ca7-abe3-d9167b52041c','fd6fb712-f48e-4091-adfc-d5f1f84cf805','Kassiererin','SC Concordia Scharmede','Finanzen, Mitgliedsbeiträge',3) on conflict do nothing;
+insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('dfb0edde-ad30-4c95-a169-63dc020bea8c','5224facb-9e7e-401d-adff-6c5119e720ae','Jugendleiter','SG Scharmede/Thüle','Jugendabteilung, Platzbelegung Jugend',4) on conflict do nothing;
 insert into public.board_members (id,person_id,position,club,responsibility,sort) values ('df515097-9556-4520-ae07-fe1d7024ad95','d1bf9d66-d9ba-4fa3-af25-fafc868353c8','Geschäftsführer','VfL Thüle','Spielbetrieb, Passwesen',5) on conflict do nothing;
 insert into public.series (id,team_id,field_id,kind,weekday,start_time,end_time,valid_from) values ('e458f836-8d2f-47d3-a8c1-750102bcaaa0','dfdf7e2b-704d-43a0-abfb-8c985841337c','5779d01c-59c3-4347-a617-e272e4f7117b','training',2,'19:00','20:30',wk - 28) on conflict do nothing;
 insert into public.series (id,team_id,field_id,kind,weekday,start_time,end_time,valid_from) values ('49b97ae9-49cd-45ab-ae84-0e75bb268243','dfdf7e2b-704d-43a0-abfb-8c985841337c','5779d01c-59c3-4347-a617-e272e4f7117b','training',4,'19:00','20:30',wk - 28) on conflict do nothing;

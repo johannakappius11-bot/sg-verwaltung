@@ -29,9 +29,9 @@ const logo = (letter) => 'data:image/svg+xml;base64,' + Buffer.from(
 ).toString('base64');
 
 const replacements = [
-  ['/logos/schamede.svg', logo('A')], ['/logos/thuele.svg', logo('B')],
-  ['SC Concordia Schamede', 'Verein A (Demo)'], ['VfL Thüle', 'Verein B (Demo)'],
-  ['SG Schamede/Thüle', 'SG Demo'],
+  ['/logos/scharmede.svg', logo('A')], ['/logos/thuele.svg', logo('B')],
+  ['SC Concordia Scharmede', 'Verein A (Demo)'], ['VfL Thüle', 'Verein B (Demo)'],
+  ['SG Scharmede/Thüle', 'SG Demo'],
 ];
 for (const [a, b] of replacements) js = js.split(a).join(b);
 js = js.replace(/<\/script/gi, '<\\/script');

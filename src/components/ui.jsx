@@ -100,6 +100,7 @@ const ICONS = {
   bus: 'M5 17V6a3 3 0 013-3h8a3 3 0 013 3v11M5 12h14M7 20v-3M17 20v-3M5 17h14',
   download: 'M12 3v12M7 10l5 5 5-5M5 20h14',
   menu: 'M4 7h16M4 12h16M4 17h16',
+  filter: 'M3 5h18l-7 8v6l-4-2v-4z',
 };
 export function Icon({ name, size = 20 }) {
   return (

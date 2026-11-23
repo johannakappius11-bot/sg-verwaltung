@@ -42,7 +42,7 @@ export function parseIcal(text) {
 
 const isOurs = (s) => config.homeKeywords.some((k) => s.toLowerCase().includes(k.toLowerCase()));
 
-// "SG Schamede/Thüle - SV Musterdorf" -> Heim/Gast erkennen
+// "SG Scharmede/Thüle - SV Musterdorf" -> Heim/Gast erkennen
 export function splitMatch(summary = '') {
   const clean = summary.replace(/\(.*?\)/g, ' ').trim();
   const parts = clean.split(/\s+(?:-|–|:|vs\.?|gegen)\s+/i);
@@ -106,8 +106,8 @@ export function parseCsv(text) {
 
 export const CSV_TEMPLATE =
   'Datum;Uhrzeit;Mannschaft;Heim;Gast;Spielort;Wettbewerb;Dauer\n'
-  + '29.11.2026;15:00;1. Herren;SG Schamede/Thüle;SV Musterdorf;;Kreisliga A;120\n'
-  + '06.12.2026;14:30;1. Herren;FC Beispielhausen;SG Schamede/Thüle;Waldstadion Beispielhausen;Kreisliga A;120\n';
+  + '29.11.2026;15:00;1. Herren;SG Scharmede/Thüle;SV Musterdorf;;Kreisliga A;120\n'
+  + '06.12.2026;14:30;1. Herren;FC Beispielhausen;SG Scharmede/Thüle;Waldstadion Beispielhausen;Kreisliga A;120\n';
 
 function parseGermanDate(d, t) {
   let m = d.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);

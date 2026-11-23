@@ -17,7 +17,7 @@ do $$
 declare wk date := date_trunc('week', now() at time zone 'Europe/Berlin')::date;
 begin
 `;
-seed.fields.forEach(f => s += `insert into public.fields (id,name,short_name,address,sort) values (${q(uid('f'+f.key))},${q(f.name)},${q(f.short_name)},${q(f.address)},${f.sort}) on conflict do nothing;\n`);
+seed.fields.forEach(f => s += `insert into public.fields (id,name,short_name,address,color,sort) values (${q(uid('f'+f.key))},${q(f.name)},${q(f.short_name)},${q(f.address)},${q(f.color)},${f.sort}) on conflict do nothing;\n`);
 seed.people.forEach(p => s += `insert into public.people (id,name,phone,email,consent) values (${q(uid(p.key))},${q(p.name)},${q(p.phone)},${q(p.email)},${p.consent}) on conflict do nothing;\n`);
 seed.teams.forEach((t, i) => s += `insert into public.teams (id,name,short_name,category,home_field_id,sort) values (${q(uid('t'+t.key))},${q(t.name)},${q(t.short_name)},${q(t.category)},${q(uid('f'+t.home))},${i+1}) on conflict do nothing;\n`);
 seed.contacts.forEach(([t, p, role, prim], i) => s += `insert into public.team_contacts (team_id,person_id,role,is_primary,sort) values (${q(uid('t'+t))},${q(uid(p))},${q(role)},${prim},${i}) on conflict do nothing;\n`);
