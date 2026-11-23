@@ -119,7 +119,7 @@ function TeamForm({ team, people, onClose }) {
                 {people.filter((p) => !contacts.some((c) => c.person_id === p.id)).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
               <select value={newContact.role} onChange={(e) => setNewContact((x) => ({ ...x, role: e.target.value }))} aria-label="Funktion">
-                {['Trainer', 'Trainerin', 'Co-Trainer', 'Co-Trainerin', 'Betreuer', 'Betreuerin'].map((r) => <option key={r}>{r}</option>)}
+                {['Trainer', 'Co-Trainer', 'Betreuer'].map((r) => <option key={r}>{r}</option>)}
               </select>
               <button className="btn" onClick={addContact} disabled={!newContact.person_id}>Hinzufügen</button>
             </div>

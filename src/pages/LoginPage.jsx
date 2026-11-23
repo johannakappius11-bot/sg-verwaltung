@@ -109,7 +109,7 @@ export default function LoginPage({ inviteToken }) {
 }
 
 function DemoLogin() {
-  const labels = { admin: 'Admin / Vorstand', trainer: 'Trainerin (D-Jugend)', member: 'Mitglied' };
+  const labels = { admin: 'Admin / Vorstand', trainer: 'Trainer (D-Jugend)', member: 'Mitglied' };
   return (
     <div className="card demo-login">
       <strong>Demo-Modus</strong>

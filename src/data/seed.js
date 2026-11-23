@@ -58,11 +58,11 @@ export const seed = {
     ['A', 'p6', 'Trainer', true], ['A', 'p2', 'Betreuer', false],
     ['B', 'p8', 'Trainer', true],
     ['C', 'p10', 'Trainer', true],
-    ['D', 'p7', 'Trainerin', true], ['D', 'p12', 'Co-Trainer', false],
-    ['E1', 'p11', 'Trainerin', true],
+    ['D', 'p7', 'Trainer', true], ['D', 'p12', 'Co-Trainer', false],
+    ['E1', 'p11', 'Trainer', true],
     ['E2', 'p12', 'Trainer', true],
-    ['F', 'p9', 'Trainerin', true],
-    ['BAM', 'p13', 'Trainerin', true],
+    ['F', 'p9', 'Trainer', true],
+    ['BAM', 'p13', 'Trainer', true],
   ],
   // [Person, Funktion, Verein, Zuständigkeit, Reihenfolge, Bereich]
   board: [

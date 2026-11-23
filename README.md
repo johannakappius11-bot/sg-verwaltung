@@ -32,7 +32,7 @@ Web-App (PWA) für **SC Concordia Scharmede** und **VfL Thüle**: Wer trainiert 
 
 Mit `VITE_DEMO=true` (oder ohne eingetragene Datenbank in `src/config.js`) startet die App im **Demo-Modus** mit erfundenen Testdaten
 (12 Mannschaften, Trainingszeiten, Spiele, Vorstand). Oben kann man die Rolle wechseln
-(Admin, Trainerin der D-Jugend, Mitglied). Demo-Daten bleiben nur im eigenen Browser.
+(Admin, Trainer der D-Jugend, Mitglied). Demo-Daten bleiben nur im eigenen Browser.
 
 **Auf dem eigenen Computer** (einmalig [Node.js](https://nodejs.org) installieren, Version 20 oder neuer):
 
@@ -52,7 +52,7 @@ Ideen zum Ausprobieren:
 - Mittwochs überschneiden sich auf dem Platz Thüle D-Jugend und E1 (gestrichelt mit „!“ = Doppelbelegung).
 - Oben die Orte antippen, um sie aus- oder einzublenden; unter „Filter“ nach Art und Mannschaft filtern.
 - Einen Termin antippen → Details und Ansprechpartner. Stefan Platzhalter (2. Herren) hat *nicht* eingewilligt → nur Name sichtbar.
-- Als „Trainerin (D-Jugend)" kann man nur Termine der D-Jugend anlegen.
+- Als „Trainer (D-Jugend)" kann man nur Termine der D-Jugend anlegen.
 - Verwalten → Spiele & Import → CSV-Vorlage herunterladen und wieder importieren.
 
 ---
