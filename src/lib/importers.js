@@ -43,11 +43,21 @@ export function parseIcal(text) {
 const isOurs = (s) => config.homeKeywords.some((k) => s.toLowerCase().includes(k.toLowerCase()));
 
 // "SG Scharmede/Thüle - SV Musterdorf" -> Heim/Gast erkennen
+// Spieltitel aufräumen: Klammern, Symbole, Wettbewerb davor ("Kreisliga A: …"), Ergebnis dahinter ("… 2:1")
+function cleanSummary(s = '') {
+  return s.replace(/\(.*?\)/g, ' ')
+    .replace(/[^\p{L}\p{N}\s.\-–:/&'’]/gu, ' ')
+    .replace(/\s+\d+\s*:\s*\d+\s*$/, '')
+    .replace(/\s+/g, ' ').trim();
+}
+export const isByeWeek = (s = '') => /spielfrei/i.test(s);
+
 export function splitMatch(summary = '') {
-  const clean = summary.replace(/\(.*?\)/g, ' ').trim();
-  const parts = clean.split(/\s+(?:-|–|:|vs\.?|gegen)\s+/i);
+  const clean = cleanSummary(summary);
+  const parts = clean.split(/\s+(?:-|–|vs\.?|gegen)\s+|\s+:\s+/i);
   if (parts.length < 2) return null;
-  const [home, away] = [parts[0].trim(), parts.slice(1).join(' - ').trim()];
+  const home = parts[0].replace(/^.*:\s+/, '').trim();
+  const away = parts.slice(1).join(' - ').trim();
   if (isOurs(home) && !isOurs(away)) return { isAway: false, opponent: away };
   if (isOurs(away) && !isOurs(home)) return { isAway: true, opponent: home };
   return null;

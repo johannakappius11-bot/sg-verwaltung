@@ -4,7 +4,7 @@ import { api, isDemo } from '../../data/api.js';
 import { useApp } from '../../store.jsx';
 import { addDays, fmtDate, hm, startOfDay } from '../../lib/dates.js';
 import { buildOccurrences, findConflicts } from '../../lib/schedule.js';
-import { CSV_TEMPLATE, csvToGame, icalToGame, parseCsv, parseIcal } from '../../lib/importers.js';
+import { CSV_TEMPLATE, csvToGame, icalToGame, isByeWeek, parseCsv, parseIcal } from '../../lib/importers.js';
 import { ErrorBox, Field, Icon } from '../../components/ui.jsx';
 import EventForm from '../../components/EventForm.jsx';
 
@@ -28,7 +28,7 @@ export default function GamesTab() {
       if (/BEGIN:VCALENDAR/.test(text)) {
         if (!team) return setError('Bitte zuerst die Mannschaft wählen, zu der der Kalender gehört.');
         const from = startOfDay(addDays(new Date(), -1));
-        rows = parseIcal(text).filter((ev) => ev.start >= from).map((ev) => icalToGame(ev, team, data.fields.map((f) => ({ id: f.id, short_name: siteById[f.site_id]?.short_name || f.short_name }))));
+        rows = parseIcal(text).filter((ev) => ev.start >= from && !isByeWeek(ev.summary)).map((ev) => icalToGame(ev, team, data.fields.map((f) => ({ id: f.id, short_name: siteById[f.site_id]?.short_name || f.short_name }))));
       } else {
         parseCsv(text).forEach((r, i) => {
           const g = csvToGame(r, editableTeams, team);

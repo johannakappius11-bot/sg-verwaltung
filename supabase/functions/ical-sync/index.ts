@@ -7,7 +7,8 @@ const HOME_KEYWORDS = (Deno.env.get('HOME_KEYWORDS') || 'Scharmede,Thüle,Thuele
 const TZ = 'Europe/Berlin';
 const cors = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret, x-region, x-supabase-api-version',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 type Ev = { uid?: string; summary?: string; location?: string; start?: Date; end?: Date; allDay?: boolean; status?: string };
@@ -53,10 +54,17 @@ function parseIcal(text: string): Ev[] {
 }
 
 const isOurs = (s: string) => HOME_KEYWORDS.some((k) => s.toLowerCase().includes(k));
+// Spieltitel aufräumen: Klammern, Symbole, Wettbewerb davor ("Kreisliga A: …"), Ergebnis dahinter ("… 2:1")
+function cleanSummary(s = '') {
+  return s.replace(/\(.*?\)/g, ' ')
+    .replace(/[^\p{L}\p{N}\s.\-–:/&'’]/gu, ' ')
+    .replace(/\s+\d+\s*:\s*\d+\s*$/, '')
+    .replace(/\s+/g, ' ').trim();
+}
 function splitMatch(summary = '') {
-  const parts = summary.replace(/\(.*?\)/g, ' ').trim().split(/\s+(?:-|–|:|vs\.?|gegen)\s+/i);
+  const parts = cleanSummary(summary).split(/\s+(?:-|–|vs\.?|gegen)\s+|\s+:\s+/i);
   if (parts.length < 2) return null;
-  const home = parts[0].trim(); const away = parts.slice(1).join(' - ').trim();
+  const home = parts[0].replace(/^.*:\s+/, '').trim(); const away = parts.slice(1).join(' - ').trim();
   if (isOurs(home) && !isOurs(away)) return { isAway: false, opponent: away };
   if (isOurs(away) && !isOurs(home)) return { isAway: true, opponent: home };
   return null;
@@ -85,8 +93,16 @@ Deno.serve(async (req) => {
   const { data: teams, error } = await service.from('teams').select('id,name,home_field_id,ical_url').not('ical_url', 'is', null);
   if (error) return json({ message: error.message }, 500);
   // Platz anhand des Ortsnamens erkennen (Kurzname der Sportanlage, z. B. "Thüle")
-  const { data: fieldRows } = await service.from('fields').select('id, sort, site:sites(short_name)').order('sort');
-  const fields = (fieldRows || []).map((f: any) => ({ id: f.id, short_name: f.site?.short_name || '' })).filter((f) => f.short_name);
+  const { data: fieldRows } = await service.from('fields').select('id, sort, site_id, site:sites(short_name)').order('sort');
+  const fields = (fieldRows || []).map((f: any) => ({ id: f.id, site_id: f.site_id, short_name: f.site?.short_name || '' })).filter((f) => f.short_name);
+  // Heimspiel-Platz: Heimplatz der Mannschaft, außer der Spielort nennt eindeutig eine andere Sportanlage
+  const pickField = (location: string, homeFieldId: string | null) => {
+    const loc = location.toLowerCase();
+    const home = fields.find((f) => f.id === homeFieldId);
+    const site = fields.find((f) => loc.includes(f.short_name.toLowerCase()));
+    if (!site || (home && home.site_id === site.site_id)) return homeFieldId;
+    return site.id;
+  };
 
   const report: string[] = [];
   const now = new Date();
@@ -94,17 +110,15 @@ Deno.serve(async (req) => {
     try {
       const res = await fetch(team.ical_url.replace(/^webcal:/i, 'https:'), { headers: { 'User-Agent': 'Platzplan-Vereinsapp/1.0' } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const events = parseIcal(await res.text()).filter((e) => e.start && e.start >= now);
+      const events = parseIcal(await res.text()).filter((e) => e.start && e.start >= now && !/spielfrei/i.test(e.summary || ''));
       const rows = events.map((ev) => {
         const m = splitMatch(ev.summary);
         const isAway = m ? m.isAway : !(ev.location && isOurs(ev.location));
         const start = ev.start!;
         const end = ev.end && !ev.allDay && ev.end > start ? ev.end : new Date(start.getTime() + 120 * 60000);
-        const loc = (ev.location || '').toLowerCase();
-        const field = (fields || []).find((f) => loc.includes(f.short_name.toLowerCase()));
         return {
           team_id: team.id, kind: 'spiel', starts_at: start.toISOString(), ends_at: end.toISOString(),
-          is_away: isAway, field_id: isAway ? null : field?.id || team.home_field_id,
+          is_away: isAway, field_id: isAway ? null : pickField(ev.location || '', team.home_field_id),
           opponent: m?.opponent || ev.summary || 'Unbekannt', venue: isAway ? ev.location || null : null,
           note: ev.status === 'CANCELLED' ? 'Abgesagt laut Kalender' : null,
           source: 'ical', external_uid: `ical:${team.id}:${ev.uid || start.toISOString()}`,
@@ -119,7 +133,8 @@ Deno.serve(async (req) => {
       let del = service.from('events').delete().eq('team_id', team.id).eq('source', 'ical').gte('starts_at', now.toISOString());
       if (keep.length) del = del.not('external_uid', 'in', `(${keep.map((k) => `"${k}"`).join(',')})`);
       await del;
-      report.push(`${team.name}: ${rows.length} Spiele`);
+      const unsure = events.filter((ev) => !splitMatch(ev.summary)).length;
+      report.push(`${team.name}: ${rows.length} Spiele${unsure ? ` (${unsure} Heim/Auswärts unsicher – bitte prüfen)` : ''}`);
     } catch (e) {
       report.push(`${team.name}: FEHLER (${(e as Error).message})`);
     }
