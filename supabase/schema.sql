@@ -385,106 +385,13 @@ drop policy if exists "admin_update" on public.profiles;
 create policy "admin_update" on public.profiles for update to authenticated
   using (public.is_admin()) with check (public.is_admin());
 
--- ---------- Freigaben: Heimspiel-Verlegungen durch Trainer ----------
-create table if not exists public.change_requests (
-  id            uuid primary key default gen_random_uuid(),
-  event_id      uuid not null references public.events(id) on delete cascade,
-  team_id       uuid not null references public.teams(id) on delete cascade,
-  requested_by  uuid references auth.users(id) on delete set null,
-  proposed      jsonb not null,             -- neue Werte (starts_at, ends_at, field_id, …)
-  previous      jsonb not null,             -- bisherige Werte zum Vergleich
-  reason        text,
-  status        text not null default 'pending' check (status in ('pending','approved','rejected')),
-  decided_by    uuid references auth.users(id) on delete set null,
-  decided_at    timestamptz,
-  decision_note text,
-  created_at    timestamptz not null default now()
-);
-create index if not exists change_requests_status_idx on public.change_requests (status);
-alter table public.change_requests enable row level security;
-
-drop policy if exists "cr_read" on public.change_requests;
-create policy "cr_read" on public.change_requests for select to authenticated
-  using (public.is_admin() or requested_by = auth.uid() or team_id in (select public.my_team_ids()));
-drop policy if exists "cr_insert" on public.change_requests;
-create policy "cr_insert" on public.change_requests for insert to authenticated
-  with check (public.can_edit_team(team_id) and requested_by = auth.uid() and status = 'pending');
-drop policy if exists "cr_withdraw" on public.change_requests;
-create policy "cr_withdraw" on public.change_requests for delete to authenticated
-  using (public.is_admin() or (requested_by = auth.uid() and status = 'pending'));
-
--- Heimspiel: Datum, Uhrzeit oder Platz darf nur ein Admin direkt ändern
--- (der automatische Kalender-Abgleich läuft ohne Benutzer und ist ausgenommen)
-create or replace function public.guard_home_game() returns trigger
-language plpgsql set search_path = public as $$
-begin
-  if auth.uid() is null or public.is_admin() then return new; end if;
-  if ((old.kind = 'spiel' and not old.is_away) or (new.kind = 'spiel' and not new.is_away))
-     and (new.starts_at is distinct from old.starts_at or new.ends_at is distinct from old.ends_at
-          or new.field_id is distinct from old.field_id or new.is_away is distinct from old.is_away
-          or new.kind is distinct from old.kind) then
-    raise exception 'Heimspiele können nur mit Freigabe eines Admins verlegt werden';
-  end if;
-  return new;
-end $$;
-drop trigger if exists guard_home_game on public.events;
-create trigger guard_home_game before update on public.events
-  for each row execute function public.guard_home_game();
-
--- Admin entscheidet: bei Freigabe wird das Spiel verlegt
-create or replace function public.decide_change_request(p_id uuid, p_approve boolean, p_note text default null)
-returns void language plpgsql security definer set search_path = public as $$
-declare r public.change_requests;
-begin
-  if not public.is_admin() then raise exception 'Keine Berechtigung'; end if;
-  select * into r from public.change_requests where id = p_id for update;
-  if not found then raise exception 'Anfrage nicht gefunden'; end if;
-  if r.status <> 'pending' then raise exception 'Über diese Anfrage wurde bereits entschieden'; end if;
-  if p_approve then
-    update public.events set
-      starts_at   = coalesce((r.proposed->>'starts_at')::timestamptz, starts_at),
-      ends_at     = coalesce((r.proposed->>'ends_at')::timestamptz, ends_at),
-      field_id    = case when r.proposed ? 'field_id' then (r.proposed->>'field_id')::uuid else field_id end,
-      is_away     = coalesce((r.proposed->>'is_away')::boolean, is_away),
-      venue       = case when r.proposed ? 'venue' then r.proposed->>'venue' else venue end,
-      opponent    = case when r.proposed ? 'opponent' then r.proposed->>'opponent' else opponent end,
-      competition = case when r.proposed ? 'competition' then r.proposed->>'competition' else competition end,
-      note        = case when r.proposed ? 'note' then r.proposed->>'note' else note end
-    where id = r.event_id;
-  end if;
-  update public.change_requests
-     set status = case when p_approve then 'approved' else 'rejected' end,
-         decided_by = auth.uid(), decided_at = now(), decision_note = nullif(trim(p_note), '')
-   where id = p_id;
-end $$;
-
--- E-Mail-Benachrichtigung über die Edge Function "notify" (siehe supabase/cron.sql)
-create or replace function public.notify_change_request() returns trigger
-language plpgsql security definer set search_path = public as $$
-declare kind text := case when tg_op = 'INSERT' then 'request' else 'decision' end;
-begin
-  if tg_op = 'UPDATE' and new.status = old.status then return new; end if;
-  begin
-    perform net.http_post(
-      url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_url') || '/notify',
-      headers := jsonb_build_object('Content-Type', 'application/json',
-        'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'ical_cron_secret')),
-      body := jsonb_build_object('type', kind, 'id', new.id));
-  exception when others then null; -- Benachrichtigung ist optional
-  end;
-  return new;
-end $$;
-drop trigger if exists notify_change_request on public.change_requests;
-create trigger notify_change_request after insert or update of status on public.change_requests
-  for each row execute function public.notify_change_request();
-
 -- Rechte: Funktionen standardmäßig für niemanden aufrufbar, dann gezielt freigeben
 revoke execute on all functions in schema public from public, anon;
 grant execute on function public.check_invite(text) to anon, authenticated;       -- Einladungsseite
 grant execute on function public.my_role(), public.is_admin(), public.is_board(), public.my_team_ids(),
   public.can_edit_team(uuid), public.photo_visible(text), public.people_public_rows(),
-  public.admin_delete_user(uuid), public.delete_my_account(), public.decide_change_request(uuid, boolean, text) to authenticated;   -- Regeln + App
-revoke execute on function public.handle_new_user(), public.people_consent_ts(), public.guard_home_game(), public.notify_change_request() from authenticated; -- nur Trigger
+  public.admin_delete_user(uuid), public.delete_my_account() to authenticated;   -- Regeln + App
+revoke execute on function public.handle_new_user(), public.people_consent_ts() from authenticated; -- nur Trigger
 grant select on public.people_public to authenticated;
 revoke all on public.people_public from anon;
 
