@@ -1,5 +1,6 @@
 # Hält das kostenlose Supabase-Projekt aktiv (wird sonst nach 7 Tagen ohne Nutzung pausiert,
-# z. B. in der Sommerpause). Benötigt zwei Repository-Secrets: SUPABASE_URL und SUPABASE_ANON_KEY.
+# z. B. in der Sommerpause). Adresse und Schlüssel sind öffentlich (stehen auch in src/config.js).
+# Optional überschreibbar mit den Repository-Secrets SUPABASE_URL und SUPABASE_ANON_KEY.
 name: Supabase aktiv halten
 on:
   schedule:
@@ -8,8 +9,13 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://jsfloxvcxahisiqhfohq.supabase.co' }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzZmxveHZjeGFoaXNpcWhmb2hxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MTY1MDAsImV4cCI6MjExMDk5MjUwMH0.etbwBpEtFrkbiUSD5MusDEjz4XK7cCiSozteBRM0JGk' }}
     steps:
-      - run: |
-          curl -fsS "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/check_invite" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" -H "Content-Type: application/json" \
-            -d '{"p_token":"keepalive"}'
+      - name: Datenbank anpingen
+        run: |
+          curl -fsS "$SUPABASE_URL/rest/v1/rpc/check_invite" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" -d '{"p_token":"keepalive"}'
+          echo " -> Supabase hat geantwortet"
